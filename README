@@ -1,22 +1,22 @@
-Asset Manager
+﻿Asset Manager
 
 AssetManager.py is a program I created to manage and organize
 assets and files either locally on a computer or dynamically on
 an SQL server.
 
-===========================================
+=========================================================
 Copyright © 2013 Craig Barnett
-===========================================
+=========================================================
 
 This program is to be distributed only by the owner, it was created
 in the hope that it will be useful to artists, but WITHOUT ANY WARRANTY.
 
-===========================================
+=========================================================
 Craig Barnett,
 302 W 40th St Apt A, Savannah, Ga 31401
 mailto: craigbme@hotmail.com
 http://www.bhvfx.com
-===========================================
+=========================================================
 
 This script allows the user to import files and add a variety of properties
 and information to them along with custom icons. The asset manager can
@@ -43,5 +43,11 @@ Database Name:   burninghelix123
 Username:        exampleuser123
 Password:        password
 
+=========================================================
+To install and run AssetManager just execute 'runner.py'.
+=========================================================
+To Uninstall navigate to your python installation and
+delete the AssetManager folder inside \Lib\site-packages\.
+=========================================================
 For any additional information, problems, or advice feel free to contact
 me using the information that was above.

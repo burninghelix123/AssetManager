@@ -1,0 +1,17 @@
+README
+runner.py
+setup.py
+AssetManager\AssetManager.py
+AssetManager\__init__.py
+AssetManager\functions\CreateLogs.py
+AssetManager\functions\DatabaseConnect.py
+AssetManager\functions\DragAndDrop.py
+AssetManager\functions\ItemDisplay.py
+AssetManager\functions\MainFunctions.py
+AssetManager\functions\OpenAsset.py
+AssetManager\functions\RegistryLookup.py
+AssetManager\functions\__init__.py
+AssetManager\ui\CustomUi.py
+AssetManager\ui\MainWindow.py
+AssetManager\ui\PropertiesWindow.py
+AssetManager\ui\__init__.py
