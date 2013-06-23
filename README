@@ -47,7 +47,9 @@ Password:        password
 To install and run AssetManager just execute 'runner.py'.
 =========================================================
 To Uninstall navigate to your python installation and
-delete the AssetManager folder inside \Lib\site-packages\.
+delete the "AssetManager" folder inside \Lib\site-packages\.
+Delete the "AssetManagerTemp" folder located in your Temp directory,
+typically in C:\Users\[UserName]\AppData\Local\Temp\.
 =========================================================
 For any additional information, problems, or advice feel free to contact
 me using the information that was above.
