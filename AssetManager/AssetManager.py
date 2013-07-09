@@ -84,12 +84,11 @@ def runDynamically():
     
 def main():
     '''Start Logging and initiate UI'''
-    #logging = CreateLogs.logSetup('AssetManagerLogs')
+    logging = CreateLogs.logSetup('AssetManagerLogs')
     app = QtGui.QApplication(sys.argv)
     cm = MessageDialog.Dialog('Select Mode:', 'Select which mode you would like to run the Asset Manager in:\nLocally on one computer or Dynamically through an SQL server', 'Run Locally', 'Run Dynamically')
     MessageDialog.Dialog.msgBox.connect(MessageDialog.Dialog.btnYes, QtCore.SIGNAL('clicked()'), runLocally)
     MessageDialog.Dialog.msgBox.connect(MessageDialog.Dialog.btnNo, QtCore.SIGNAL('clicked()'), runDynamically)
-    #
     cm.exec_()
     app.exec_()
 
