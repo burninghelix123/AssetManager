@@ -45,7 +45,7 @@ class PropertiesPopUp(QtGui.QDialog):
                         commentsField):
         '''Writes information to file'''        
         item = self.findSelection(listVar)
-        itemNameExt = os.path.split(item)
+        itemNameExt = os.path.split(str(item))
         itemNameExt = itemNameExt[1]
         itemName = (itemNameExt.split('.', 1)[0])
         file = open(tempLocation + itemName + '.properties', 'w+')
@@ -77,7 +77,7 @@ class PropertiesPopUp(QtGui.QDialog):
             tempDir = tempfile.gettempdir()
             tempLocation = os.path.join(tempDir,'AssetManagerTemp')
             item = self.findSelection(listVar)
-            itemNameExt = os.path.split(item)
+            itemNameExt = os.path.split(str(item))
             itemNameExt = itemNameExt[1]
             itemName = (itemNameExt.split('.', 1)[0])
             nameField = PropertiesPopUp.window.nameField.text()
@@ -102,7 +102,7 @@ class PropertiesPopUp(QtGui.QDialog):
                     url = listVar.item(i).statusTip()
                     listVar.takeItem(i)
                     if os.path.exists(url):
-                        itemNameExt = os.path.split(url)
+                        itemNameExt = os.path.split(str(url))
                         itemNameExt = itemNameExt[1]
                         itemName = (itemNameExt.split('.', 1)[0])
                         tempPath= tempLocation + itemName + '.png'
@@ -144,10 +144,11 @@ class PropertiesPopUp(QtGui.QDialog):
                             authorField = config.get('Author', 'Author')
                             versionField = config.get('Version', 'Version')
                             commentsField = config.get('Comments', 'Comments')
-                            text = ItemDisplay.itemDisplay(fileField, locationField, nameField,
-                                                           categoryField, tagsField, statusField,
-                                                           dateField, authorField, versionField,
-                                                           commentsField)
+                            info = [('Name:  ', nameField ), ('File:  ', fileField), ('Location:  ',locationField), 
+                                    ('Category:  ', categoryField), ('Tags:  ',tagsField), ('Status:  ',statusField), 
+                                    ('Date:  ',dateField), ('Author:  ',authorField), ('Version:  ',versionField), 
+                                    ('Comments:  ',commentsField)]
+                            text = ItemDisplay.itemDisplay(info)
                             item.setText(text)
                         else:
                             item.setText(url)
@@ -158,7 +159,7 @@ class PropertiesPopUp(QtGui.QDialog):
             tempDir = tempfile.gettempdir()
             tempLocation = os.path.join(tempDir,'AssetManagerTemp')
             item = self.findSelection(listVar)
-            itemNameExt = os.path.split(item)
+            itemNameExt = os.path.split(str(item))
             itemNameExt = itemNameExt[1]
             itemName = (itemNameExt.split('.', 1)[0])
             nameField = str(PropertiesPopUp.window.nameField.text())
@@ -184,7 +185,7 @@ class PropertiesPopUp(QtGui.QDialog):
                     url = listVar.item(i).statusTip()
                     listVar.takeItem(i)
                     if os.path.exists(url):
-                        itemNameExt = os.path.split(url)
+                        itemNameExt = os.path.split(str(url))
                         itemNameExt = itemNameExt[1]
                         itemName = (itemNameExt.split('.', 1)[0])
                         tempPath= tempLocation + itemName + 'temp.png'
@@ -247,10 +248,11 @@ class PropertiesPopUp(QtGui.QDialog):
                             authorField = data[7]
                             versionField = data[8]
                             commentsField = data[9]
-                            text = ItemDisplay.itemDisplay(fileField, locationField, nameField,
-                                                           categoryField, tagsField, statusField,
-                                                           dateField, authorField, versionField,
-                                                           commentsField)
+                            info = [('Name:  ', nameField ), ('File:  ', fileField), ('Location:  ',locationField), 
+                                    ('Category:  ', categoryField), ('Tags:  ',tagsField), ('Status:  ',statusField), 
+                                    ('Date:  ',dateField), ('Author:  ',authorField), ('Version:  ',versionField), 
+                                    ('Comments:  ',commentsField)]
+                            text = ItemDisplay.itemDisplay(info)
                             item.setText(text)
                         else:
                             item.setText(url)
@@ -272,7 +274,7 @@ class PropertiesPopUp(QtGui.QDialog):
                     itemtext= str(item.statusTip())
                     tempDir = tempfile.gettempdir()
                     tempLocation = os.path.join(tempDir,'AssetManagerTemp')
-                    itemNameExt = os.path.split(itemtext)
+                    itemNameExt = os.path.split(str(itemtext))
                     itemNameExt = itemNameExt[1]
                     itemName = (itemNameExt.split('.', 1)[0])
                     tempName = str(itemName)
@@ -298,7 +300,7 @@ class PropertiesPopUp(QtGui.QDialog):
                     itemtext = str(item.statusTip())
                     tempDir = tempfile.gettempdir()
                     tempLocation = os.path.join(tempDir,'AssetManagerTemp')
-                    itemNameExt = os.path.split(itemtext)
+                    itemNameExt = os.path.split(str(itemtext))
                     itemNameExt = itemNameExt[1]
                     itemName = (itemNameExt.split('.', 1)[0])
                     tempPath= tempLocation + itemName + 'temp.png'

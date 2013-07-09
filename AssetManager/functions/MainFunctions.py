@@ -85,10 +85,11 @@ class MainFunctions():
                     authorField = config.get('Author', 'Author')
                     versionField = config.get('Version', 'Version')
                     commentsField = config.get('Comments', 'Comments')
-                    text = ItemDisplay.itemDisplay(fileField, locationField, nameField,
-                                       categoryField, tagsField, statusField,
-                                       dateField, authorField, versionField,
-                                       commentsField)
+                    info = [('Name:  ', nameField ), ('File:  ', fileField), ('Location:  ',locationField), 
+                            ('Category:  ', categoryField), ('Tags:  ',tagsField), ('Status:  ',statusField), 
+                            ('Date:  ',dateField), ('Author:  ',authorField), ('Version:  ',versionField), 
+                            ('Comments:  ',commentsField)]
+                    text = ItemDisplay.itemDisplay(info)
                     item.setText(text)
                 else:
                     item.setText(url)
@@ -167,10 +168,11 @@ class MainFunctions():
                     authorField = data[7]
                     versionField = data[8]
                     commentsField = data[9]
-                    text = ItemDisplay.itemDisplay(fileField, locationField, nameField,
-                                       categoryField, tagsField, statusField,
-                                       dateField, authorField, versionField,
-                                       commentsField)
+                    info = [('Name:  ', nameField ), ('File:  ', fileField), ('Location:  ',locationField), 
+                            ('Category:  ', categoryField), ('Tags:  ',tagsField), ('Status:  ',statusField), 
+                            ('Date:  ',dateField), ('Author:  ',authorField), ('Version:  ',versionField), 
+                            ('Comments:  ',commentsField)]
+                    text = ItemDisplay.itemDisplay(info)
                     item.setText(text)
                 else:
                     item.setText(url)
