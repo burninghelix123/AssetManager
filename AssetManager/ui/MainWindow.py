@@ -4,6 +4,8 @@ import base64
 import os
 from ..functions import OpenAsset
 from ..functions import MainFunctions
+from ..functions import DatabaseConnect
+from ..functions import FileIO
 import ConfigParser
 import tempfile
 from ..functions import OpenAsset
@@ -25,6 +27,8 @@ class Ui_MainWindow(QtGui.QMainWindow):
     mainWindow = ''
     propertiesWindow = ''
     interfaceColor = ''
+    cur = ''
+    ex = ''
     
     def __init__(self, mainWindow2, currentMode, database):
         super(Ui_MainWindow, self).__init__()
@@ -38,13 +42,16 @@ class Ui_MainWindow(QtGui.QMainWindow):
         self.centralwidget = QtGui.QWidget(Ui_MainWindow.mainWindow)
         Ui_MainWindow.interfaceColor = 1
         Ui_MainWindow.window = self
+        if Ui_MainWindow.currentMode == 1:
+            Ui_MainWindow.currentMode, Ui_MainWindow.cur, Ui_MainWindow.ex = DatabaseConnect.loginPrep()
         MainWindowFunctions = MainFunctions.MainFunctions(Ui_MainWindow.window,
                                                           Ui_MainWindow.mainWindow,
                                                           Ui_MainWindow.currentMode,
                                                           Ui_MainWindow.database,
                                                           Ui_MainWindow.copiedItems,
-                                                          Ui_MainWindow.propertiesWindow)
-        MainWindowFunctions.checkDatabase()
+                                                          Ui_MainWindow.propertiesWindow,
+                                                          Ui_MainWindow.cur,
+                                                          Ui_MainWindow.ex)
         self.main_tabWidget = QtGui.QTabWidget(self.centralwidget)
         self.projects_tab, self.models_tab, self.shaders_tab, self.images_tab, self.videos_tab, self.audio_tab, self.scripts_tab, self.simulations_tab = QtGui.QWidget(), QtGui.QWidget(), QtGui.QWidget(), QtGui.QWidget(), QtGui.QWidget(), QtGui.QWidget(), QtGui.QWidget(), QtGui.QWidget()
         self.projects_scrollArea, self.models_scrollArea, self.shaders_scrollArea, self.images_scrollArea, self.videos_scrollArea, self.audio_scrollArea, self.scripts_scrollArea, self.simulations_scrollArea = QtGui.QScrollArea(self.projects_tab), QtGui.QScrollArea(self.models_tab), QtGui.QScrollArea(self.shaders_tab), QtGui.QScrollArea(self.images_tab), QtGui.QScrollArea(self.videos_tab), QtGui.QScrollArea(self.audio_tab), QtGui.QScrollArea(self.scripts_tab), QtGui.QScrollArea(self.simulations_tab)
@@ -233,7 +240,6 @@ class Ui_MainWindow(QtGui.QMainWindow):
         config = ConfigParser.ConfigParser()
         config.read(tempLocation)
         programs = config.items('Programs')
-        #print Programs
         menus = ['openWithProjects', 'openWithModels', 'openWithShaders', 'openWithImages', 'openWithVideos', 'openWithAudio', 'openWithScripts', 'openWithSimulations']
         for menu in menus:
             actions = getattr(Ui_MainWindow.window, menu)
@@ -246,14 +252,7 @@ class Ui_MainWindow(QtGui.QMainWindow):
                             action.setVisible(True)
                         if state == 'False':
                             action.setVisible(False)
-            '''
-            actions = getattr(Ui_MainWindow.window, menu)
-            actions = actions.actions()
-            if state == 'CHECKED':
-                actions[item.row()].setVisible(True)
-            if state == 'UNCHECKED':
-                actions[item.row()].setVisible(False)
-            '''
+  
     def setupUiElements(self, MainWindowFunctions):
         '''Setup Ui elements attributes for sidebar'''
         self.settings_frame = QtGui.QFrame(self.centralwidget)
@@ -437,13 +436,12 @@ class Ui_MainWindow(QtGui.QMainWindow):
         tempLocation = os.path.join(tempDir,'AssetManagerTemp')
         tempLocation = os.path.join(tempLocation,'LoginInfo.txt')
         if os.path.exists(tempLocation):
-            config = ConfigParser.ConfigParser()
-            config.read(tempLocation)
-            address = config.get('Address', 'Address')
-            username = config.get('Username', 'Username')
-            encpassword = config.get('Password', 'Password')
-            password = base64.b64decode(encpassword)
-            databasename = config.get('DatabaseName', 'DatabaseName')
+            data = FileIO.read(tempLocation)
+            address = data['address']
+            username = data['username']
+            password = data['password']
+            password = base64.b64decode(password)
+            databasename = data['databasename']
             self.address_lineEdit.setText(address)
             self.username_lineEdit.setText(username)
             self.password_lineEdit.setText(password)

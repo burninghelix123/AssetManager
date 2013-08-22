@@ -35,15 +35,15 @@ def lookupKeys():
                                r'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\'+(allKey[key]),
                                0, KEY_READ)
         try:
-            value = QueryValueEx(newMasterKey, "DisplayName")
+            value = QueryValueEx(newMasterKey, 'DisplayName')
         except:
             value = None
         try:
-            value2 = QueryValueEx(newMasterKey, "InstallLocation")
+            value2 = QueryValueEx(newMasterKey, 'InstallLocation')
         except:
             value2 = None
         try:
-            value3 = QueryValueEx(newMasterKey, "UninstallString")
+            value3 = QueryValueEx(newMasterKey, 'UninstallString')
         except:
             value3 = None
         entry = () 
@@ -81,7 +81,7 @@ def lookupKeys2():
                                r'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\'+(allKey[key]),
                                0, KEY_READ)
         try:
-            value = QueryValueEx(newMasterKey, "Path")
+            value = QueryValueEx(newMasterKey, 'Path')
         except:
             value = None
         entry = ()

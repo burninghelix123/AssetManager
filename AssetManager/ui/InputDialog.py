@@ -65,10 +65,10 @@ class Input_Dialog(QtGui.QDialog):
     
     def closeEvent(self, event):
         Input_Dialog.cancel = True
-        Input_Dialog.username = 'Invalid'
-        Input_Dialog.password = 'Invalid'
-        Input_Dialog.address = 'Invalid'
-        Input_Dialog.database = 'Invalid'
+        Input_Dialog.username = None
+        Input_Dialog.password = None
+        Input_Dialog.address = None
+        Input_Dialog.database = None
         reply = QtGui.QMessageBox.question(self, 'Message',
             "Are you sure you want to cancel and run in local mode?", QtGui.QMessageBox.Yes | 
             QtGui.QMessageBox.No, QtGui.QMessageBox.No)
@@ -87,13 +87,13 @@ class Input_Dialog(QtGui.QDialog):
         
     def reject(self):
         Input_Dialog.cancel = True
-        Input_Dialog.username = 'Invalid'
-        Input_Dialog.password = 'Invalid'
-        Input_Dialog.address = 'Invalid'
-        Input_Dialog.database = 'Invalid'
+        Input_Dialog.username = None
+        Input_Dialog.password = None
+        Input_Dialog.address = None
+        Input_Dialog.database = None
         Input_Dialog.dialog.close()
    
-if __name__ == "__main__":
+if __name__ == '__main__':
     import sys
     app = QtGui.QApplication(sys.argv)
     ui = Input_Dialog()

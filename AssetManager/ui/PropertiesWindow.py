@@ -2,8 +2,10 @@
 from PyQt4 import QtCore, QtGui
 import os
 import ConfigParser
+import string
 import MySQLdb as mysql
 from ..functions import ItemDisplay
+from ..functions import FileIO
 import tempfile
 from ..ui import CustomUi
 
@@ -18,13 +20,15 @@ class PropertiesPopUp(QtGui.QDialog):
     window = ''
     
     def __init__(self, propertiesWindow, listVar, interfaceColor,
-                 currentMode, database):
+                 currentMode, database, cur, ex):
         QtGui.QWidget.__init__(self)
         PropertiesPopUp.col = CustomUi.ColorPicker.col
         PropertiesPopUp.col1 = CustomUi.ColorPicker.col1
         PropertiesPopUp.col2 = CustomUi.ColorPicker.col2
         PropertiesPopUp.col3 = CustomUi.ColorPicker.col3
         PropertiesPopUp.col4 = CustomUi.ColorPicker.col4
+        PropertiesPopUp.cur = cur
+        PropertiesPopUp.ex = ex
         self.setupUi(propertiesWindow, listVar, interfaceColor,
                      currentMode, database)
 
@@ -38,287 +42,213 @@ class PropertiesPopUp(QtGui.QDialog):
             if listVar.isItemSelected(listVar.item(i)) == True:
                 fileToOpen = listVar.item(i).statusTip()
         return(fileToOpen)
-
-    def writeProperties(self, listVar, itemName, tempLocation, nameField,
-                        categoryField, tagsField, statusField,
-                        dateField, authorField, versionField,
-                        commentsField):
-        '''Writes information to file'''        
-        item = self.findSelection(listVar)
-        itemNameExt = os.path.split(str(item))
-        itemNameExt = itemNameExt[1]
-        itemName = (itemNameExt.split('.', 1)[0])
-        file = open(tempLocation + itemName + '.properties', 'w+')
-        file.write('[File]\n')
-        file.write('File = ' + itemName + '\n\n')
-        file.write('[Location]\n')
-        file.write('Location = ' + tempLocation + '\n\n')       
-        file.write('[Name]\n')
-        file.write('Name = ' + nameField + '\n\n')
-        file.write('[Category]\n')
-        file.write('Category = ' + categoryField + '\n\n')
-        file.write('[Tags]\n')
-        file.write('Tags = ' + tagsField + '\n\n')
-        file.write('[Status]\n')
-        file.write('Status = ' + statusField + '\n\n')
-        file.write('[Date Updated]\n')
-        file.write('Date = ' + dateField + '\n\n')
-        file.write('[Author]\n')
-        file.write('Author = ' + authorField + '\n\n')
-        file.write('[Version]\n')
-        file.write('Version = ' + versionField + '\n\n')
-        file.write('[Comments]\n')
-        file.write('Comments = ' + commentsField + '\n\n')
-        file.close
+        
+    def findSelection(self, listVar):
+        '''Find selected item/asset'''
+        items = listVar.count()
+        fileToOpen = ''
+        selectedItems=[]
+        rangedList =range(items)
+        for i in rangedList:
+            if listVar.isItemSelected(listVar.item(i))==True:
+                fileToOpen = listVar.item(i).statusTip()
+        return(fileToOpen)
+    
+    def AddIcon(self):
+                                                                
+        pass
     
     def saveProperties(self, propertiesWindow, listVar, currentMode, database):
         '''Save properties information'''
-        if currentMode == 0: #If ran locally
-            tempDir = tempfile.gettempdir()
-            tempLocation = os.path.join(tempDir,'AssetManagerTemp')
-            item = self.findSelection(listVar)
-            itemNameExt = os.path.split(str(item))
-            itemNameExt = itemNameExt[1]
-            itemName = (itemNameExt.split('.', 1)[0])
-            nameField = PropertiesPopUp.window.nameField.text()
-            categoryField = PropertiesPopUp.window.categoryField.text()
-            tagsField = PropertiesPopUp.window.tagsField.text()
-            statusField = PropertiesPopUp.window.statusField.text()
-            dateField = PropertiesPopUp.window.dateField.text()
-            authorField = PropertiesPopUp.window.authorField.text()
-            versionField = PropertiesPopUp.window.versionField.text()
-            commentsField = PropertiesPopUp.window.commentsField.toPlainText()
+        tempDir = tempfile.gettempdir()
+        tempLocation = os.path.join(tempDir,'AssetManagerTemp')
 
-            self.writeProperties(listVar, itemName, tempLocation, nameField,
-                            categoryField, tagsField, statusField,
-                            dateField, authorField, versionField,
-                            commentsField)
-            items = listVar.count()
-            selectedItems=[]
-            rangedList =range(items)
-            rangedList.reverse()
-            for i in rangedList:
-                if listVar.isItemSelected(listVar.item(i))==True:
-                    url = listVar.item(i).statusTip()
-                    listVar.takeItem(i)
-                    if os.path.exists(url):
-                        itemNameExt = os.path.split(str(url))
-                        itemNameExt = itemNameExt[1]
-                        itemName = (itemNameExt.split('.', 1)[0])
-                        tempPath= tempLocation + itemName + '.png'
-                        if os.path.exists(tempPath):
-                            item = QtGui.QListWidgetItem(url)
-                            QtGui.QListWidget.insertItem(listVar, i, item)
-                            icon = QtGui.QIcon()
-                            icon.addFile(tempPath,QtCore.QSize(72,72))
-                            pixmap = icon.pixmap(QtCore.QSize(72,72),
-                                                 QtGui.QIcon.Normal, QtGui.QIcon.Off)
-                            item.setIcon(icon)
-                            pixmap.save((tempPath), 'PNG', 1)
-                        else:
-                            if str(url).endswith(('.gif', '.jpg', '.tif', '.png',
-                                                  '.tiff', '.bmp', '.ico')) == True:
-                                item = QtGui.QListWidgetItem(url)
-                                QtGui.QListWidget.insertItem(listVar, i, item)
-                                icon = QtGui.QIcon()
-                                icon.addFile(url,QtCore.QSize(72,72))
-                                pixmap = icon.pixmap(QtCore.QSize(72,72),
-                                                     QtGui.QIcon.Normal, QtGui.QIcon.Off)
-                                item.setIcon(icon)
-                                pixmap.save((tempPath), 'PNG', 1)
-                            else:                    
-                                item = QtGui.QListWidgetItem(url)
-                                QtGui.QListWidget.insertItem(listVar, i, item)
-                        item.setStatusTip(url)
-                        if os.path.exists(tempLocation + itemName + '.properties'):
-                            config = ConfigParser.ConfigParser()
-                            wholeFile = str(tempLocation + itemName + '.properties')
-                            config.read(wholeFile)
-                            fileField = itemNameExt
-                            locationField = tempLocation
-                            nameField = config.get('Name', 'Name')
-                            categoryField = config.get('Category', 'Category')
-                            tagsField = config.get('Tags', 'Tags')
-                            statusField = config.get('Status', 'Status')
-                            dateField = config.get('Date Updated', 'Date')
-                            authorField = config.get('Author', 'Author')
-                            versionField = config.get('Version', 'Version')
-                            commentsField = config.get('Comments', 'Comments')
-                            info = [('Name:  ', nameField ), ('File:  ', fileField), ('Location:  ',locationField), 
-                                    ('Category:  ', categoryField), ('Tags:  ',tagsField), ('Status:  ',statusField), 
-                                    ('Date:  ',dateField), ('Author:  ',authorField), ('Version:  ',versionField), 
-                                    ('Comments:  ',commentsField)]
-                            text = ItemDisplay.itemDisplay(info)
-                            item.setText(text)
-                        else:
-                            item.setText(url)
-                        item.setStatusTip(url)
-            self.close()
+        url = self.findSelection(listVar)
+        valid_chars = "-_. %s%s" % (string.ascii_letters, string.digits)
+        fileName = ''.join(c for c in str(url) if c in valid_chars)
+        items = listVar.count()
+        listItem = ''
+        selectedItems=[]
+        rangedList = range(items)
+        itemNumber = ''
+        for i in rangedList:
+            if listVar.isItemSelected(listVar.item(i))==True:
+                itemNumber = i
+        listVar.takeItem(itemNumber)
+        listItem = QtGui.QListWidgetItem(url)
+        itemNameExt = os.path.split(str(url))
+        itemNameExt = itemNameExt[1]
+        itemName = (itemNameExt.split('.', 1)[0])
+        nameField = PropertiesPopUp.window.nameField.text()
+        categoryField = PropertiesPopUp.window.categoryField.text()
+        tagsField = PropertiesPopUp.window.tagsField.text()
+        statusField = PropertiesPopUp.window.statusField.text()
+        dateField = PropertiesPopUp.window.dateField.text()
+        authorField = PropertiesPopUp.window.authorField.text()
+        versionField = PropertiesPopUp.window.versionField.text()
+        commentsField = PropertiesPopUp.window.commentsField.toPlainText()
+        tempFile = os.path.join(tempLocation, 'Properties')
+        tempFile = os.path.join(tempFile,(str(fileName) +'.properties'))
+        if currentMode == 0: #If ran locally
+            data = '#Properties File for: ' + str(itemName)
+            section = ['File', 'Location', 'Name', 'Category', 'Tags', 'Status', 'Date', 'Author', 'Version', 'Comments']
+            key = ['File', '\n', 'Location', '\n', 'Name', '\n', 'Category', '\n', 'Tags', '\n', 'Status', '\n', 'Date', '\n', 'Author', '\n', 'Version', '\n', 'Comments']
+            value = [str(itemNameExt), '\n', str(url), '\n', str(nameField), '\n', str(categoryField), '\n', str(tagsField), '\n', str(statusField), '\n', str(dateField), '\n', str(authorField), '\n', str(versionField), '\n', str(commentsField)]
+            data = FileIO.build(data, section, key, value)
+            FileIO.write(data, tempFile)
+            if os.path.exists(url):
+                itemNameExt = os.path.split(str(url))
+                itemNameExt = itemNameExt[1]
+                itemName = (itemNameExt.split('.', 1)[0])
+                tempPath = os.path.join(tempLocation, 'Images')
+                tempPath = os.path.join(tempPath,(str(fileName) + '.png'))
+                if os.path.exists(tempPath):
+                    pixmap = QtGui.QPixmap()
+                    pixmap.load(tempPath)
+                    pixmap.scaled(72, 72, QtCore.Qt.IgnoreAspectRatio)
+                    icon = QtGui.QIcon()
+                    icon.addPixmap(pixmap)
+                    listItem.setIcon(icon)                 
+                else:
+                    if str(url).endswith(('.gif', '.jpg', '.tif', '.png',
+                                          '.tiff', '.bmp', '.ico')) == True:
+                        icon = QtGui.QIcon()
+                        icon.addFile(url,QtCore.QSize(72,72))
+                        pixmap = icon.pixmap(QtCore.QSize(72,72),
+                                             QtGui.QIcon.Normal, QtGui.QIcon.Off)
+                        listItem.setIcon(icon)
+                        pixmap.save((tempPath), 'PNG', 1)
+                if os.path.exists(tempFile):
+                    data = FileIO.read(tempFile)
+                    nameField = data['name']
+                    categoryField = data['category']
+                    tagsField = data['tags']
+                    statusField = data['status']
+                    dateField = data['date']
+                    authorField = data['author']
+                    versionField = data['version']
+                    commentsField = data['comments']
+                    fileField = itemNameExt
+                    locationField = tempLocation
+                    info = [('Name:  ', nameField ), ('File:  ', fileField), ('Location:  ',locationField), 
+                            ('Category:  ', categoryField), ('Tags:  ',tagsField), ('Status:  ',statusField), 
+                            ('Date:  ',dateField), ('Author:  ',authorField), ('Version:  ',versionField), 
+                            ('Comments:  ',commentsField)]
+                    text = ItemDisplay.itemDisplay(info)
+                    listItem.setText(text)
+                else:
+                    listItem.setText(url)
+                listItem.setStatusTip(url)
+                QtGui.QListWidget.insertItem(listVar, itemNumber, listItem)
             
-        if currentMode == 1: #If ran dynamically
-            tempDir = tempfile.gettempdir()
-            tempLocation = os.path.join(tempDir,'AssetManagerTemp')
-            item = self.findSelection(listVar)
-            itemNameExt = os.path.split(str(item))
-            itemNameExt = itemNameExt[1]
-            itemName = (itemNameExt.split('.', 1)[0])
-            nameField = str(PropertiesPopUp.window.nameField.text())
-            categoryField = str(PropertiesPopUp.window.categoryField.text())
-            tagsField = str(PropertiesPopUp.window.tagsField.text())
-            statusField = str(PropertiesPopUp.window.statusField.text())
-            dateField = str(PropertiesPopUp.window.dateField.text())
-            authorField = str(PropertiesPopUp.window.authorField.text())
-            versionField = str(PropertiesPopUp.window.versionField.text())
-            commentsField = str(PropertiesPopUp.window.commentsField.toPlainText())
-            propertiesData = (itemNameExt, item, nameField, categoryField,
+        if currentMode == 1:
+            propertiesData = (itemNameExt, url, nameField, categoryField,
                               tagsField, statusField, dateField, authorField,
                               versionField, commentsField)
-            cur = database.cursor()
-            ex = cur.execute
-            ex('REPLACE INTO Properties (File, Location, Name, Category, Tags, Status, Date, Author, Version, Comments) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', propertiesData)
-            items = listVar.count()
-            selectedItems=[]
-            rangedList =range(items)
-            rangedList.reverse()
-            for i in rangedList:
-                if listVar.isItemSelected(listVar.item(i))==True:
-                    url = listVar.item(i).statusTip()
-                    listVar.takeItem(i)
-                    if os.path.exists(url):
-                        itemNameExt = os.path.split(str(url))
-                        itemNameExt = itemNameExt[1]
-                        itemName = (itemNameExt.split('.', 1)[0])
-                        tempPath= tempLocation + itemName + 'temp.png'
-                        tempPath2= tempLocation + itemName + '.png'
-                        data = 0
-                        try:
-                            cur = database.cursor()
-                            ex = cur.execute
-                            data = ex("SELECT Data FROM Icons WHERE Name=%s",
-                                      itemNameExt)
-                        except:
-                            pass
-                        if data >= 1:
-                            imgFile = open(tempPath2, 'wb')
-                            imgFile.write(cur.fetchone()[0])
-                            imgFile.close
-                            item = QtGui.QListWidgetItem(url)
-                            QtGui.QListWidget.insertItem(listVar, i, item)
-                            icon = QtGui.QIcon()
-                            icon.addFile(tempPath2,QtCore.QSize(72,72))
-                            pixmap = icon.pixmap(QtCore.QSize(72,72),
-                                                 QtGui.QIcon.Normal, QtGui.QIcon.Off)
-                            item.setIcon(icon)
-                        else:
-                            if str(url).endswith(('.gif', '.jpg', '.tif',
-                                                  '.png', '.tiff', '.bmp', '.ico')) == True:
-                                item = QtGui.QListWidgetItem(url)
-                                QtGui.QListWidget.insertItem(listVar, i, item)
-                                icon = QtGui.QIcon()
-                                icon.addFile(url,QtCore.QSize(72,72))
-                                pixmap = icon.pixmap(QtCore.QSize(72,72),
-                                                     QtGui.QIcon.Normal, QtGui.QIcon.Off)
-                                item.setIcon(icon)
-                                blobValue = open(tempPath, 'rb').read()
-                                data = (itemNameExt, url, blobValue)
-                                cur = database.cursor()
-                                ex = cur.execute
-                                ex('REPLACE INTO Icons(Name, Location, Data) VALUES(%s, %s, %s)', data)
-                                os.remove(str(tempPath))
-                            else:                    
-                                item = QtGui.QListWidgetItem(url)
-                                QtGui.QListWidget.insertItem(listVar, i, item)
-                        item.setStatusTip(url)
-                        data = 0
-                        try:
-                            cur = database.cursor()
-                            ex = cur.execute
-                            data = ex("SELECT * FROM Properties WHERE File=%s",itemNameExt)
-                        except:
-                            pass
-                        if data >= 1:
-                            data = cur.fetchone()
-                            fileField = data[0]
-                            locationField = data[1]
-                            nameField = data[2]
-                            categoryField = data[3]
-                            tagsField = data[4]
-                            statusField = data[5]
-                            dateField = data[6]
-                            authorField = data[7]
-                            versionField = data[8]
-                            commentsField = data[9]
-                            info = [('Name:  ', nameField ), ('File:  ', fileField), ('Location:  ',locationField), 
-                                    ('Category:  ', categoryField), ('Tags:  ',tagsField), ('Status:  ',statusField), 
-                                    ('Date:  ',dateField), ('Author:  ',authorField), ('Version:  ',versionField), 
-                                    ('Comments:  ',commentsField)]
-                            text = ItemDisplay.itemDisplay(info)
-                            item.setText(text)
-                        else:
-                            item.setText(url)
-                        item.setStatusTip(url)
+            PropertiesPopUp.ex('REPLACE INTO Properties (File, Location, Name, Category, Tags, Status, Date, Author, Version, Comments) values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', propertiesData)            
+
+            if os.path.exists(url):
+                tempPath = os.path.join(tempLocation, 'Images')
+                tempPath = os.path.join(tempPath, (str(fileName) + 'temp.png'))
+                tempPath2 = os.path.join(tempPath,(str(fileName) + '.png'))
+                info = [('Name:  ', str(itemNameExt)), ('File:  ', str(url)), ('Location:  ',str(nameField)), 
+                        ('Category:  ', str(categoryField)), ('Tags:  ',str(tagsField)), ('Status:  ',str(statusField)), 
+                        ('Date:  ',str(dateField)), ('Author:  ',str(authorField)), ('Version:  ',str(versionField)), 
+                        ('Comments:  ',str(commentsField))]
+                text = ItemDisplay.itemDisplay(info)
+                listItem.setText(text)
+
+                if str(url).endswith(('.gif', '.jpg', '.tif',
+                                      '.png', '.tiff', '.bmp', '.ico')) == True:
+                    icon = QtGui.QIcon()
+                    icon.addFile(tempPath2,QtCore.QSize(72,72))
+                    pixmap = icon.pixmap(QtCore.QSize(72,72),
+                                         QtGui.QIcon.Normal,
+                                         QtGui.QIcon.Off)
+                    listItem.setIcon(icon)
+                    pixmap.save((tempPath), 'PNG', 1)
+                    blobValue = open(tempPath, 'rb').read()
+                    data = (itemNameExt, url, blobValue)
+                    PropertiesPopUp.ex('REPLACE INTO Icons(Name, Location, Data) VALUES(%s, %s, %s)', data)
+                    os.remove(str(tempPath))
+                data = 0
+                try:
+                    data = PropertiesPopUp.ex('SELECT Data FROM Icons WHERE Location=%s',url)
+                except:
+                    pass
+                if data >= 1:
+                    ablob = PropertiesPopUp.cur.fetchone()[0]
+                    pixmap = QtGui.QPixmap()
+                    pixmap.loadFromData(ablob)
+                    pixmap.scaled(72, 72, QtCore.Qt.IgnoreAspectRatio)
+                    icon = QtGui.QIcon()
+                    icon.addPixmap(pixmap)
+                    listItem.setIcon(icon)
+                listItem.setStatusTip(url)
+                QtGui.QListWidget.insertItem(listVar, itemNumber, listItem)
         propertiesWindow.close()
-        
+
     def customIcon(self, listVar, currentMode, database):
         '''Add custom icon to file/asset'''
+        items = listVar.count()
+        listItem = ''
+        selectedItems=[]
+        rangedList =range(items)
+        itemNumber = ''
+        for i in rangedList:
+            if listVar.isItemSelected(listVar.item(i))==True:
+                item = listVar.item(i)
         if currentMode == 0: #If ran locally
             url = QtGui.QFileDialog.getOpenFileName(self,
                                                     'Open file','', ("Select Image: (*.*)"))
             url = os.path.abspath(url)
-            items = listVar.count()
-            rangedList =range(items)
-            rangedList.reverse()
-            for i in rangedList:
-                if listVar.isItemSelected(listVar.item(i))==True:
-                    item = listVar.item(i)
-                    itemtext= str(item.statusTip())
-                    tempDir = tempfile.gettempdir()
-                    tempLocation = os.path.join(tempDir,'AssetManagerTemp')
-                    itemNameExt = os.path.split(str(itemtext))
-                    itemNameExt = itemNameExt[1]
-                    itemName = (itemNameExt.split('.', 1)[0])
-                    tempName = str(itemName)
-                    tempPath= tempLocation + itemName + '.png'
-                    icon = QtGui.QIcon(url)
-                    icon = QtGui.QIcon()
-                    icon.addFile(url,QtCore.QSize(72,72))
-                    pixmap = icon.pixmap(QtCore.QSize(72,72),
-                                         QtGui.QIcon.Normal, QtGui.QIcon.Off)
-                    item.setIcon(icon)
-                    pixmap.save((tempPath), 'PNG', 1)
+            itemtext= str(item.statusTip())
+            valid_chars = "-_. %s%s" % (string.ascii_letters, string.digits)
+            fileName = ''.join(c for c in str(itemtext) if c in valid_chars)
+            tempDir = tempfile.gettempdir()
+            tempLocation = os.path.join(tempDir,'AssetManagerTemp')
+            itemNameExt = os.path.split(str(itemtext))
+            itemNameExt = itemNameExt[1]
+            itemName = (itemNameExt.split('.', 1)[0])
+            tempPath = os.path.join(tempLocation, 'Images')
+            tempPath = os.path.join(tempPath,(str(fileName) + '.png'))
+            tempName = str(itemName)            
+            pixmap = QtGui.QPixmap()
+            pixmap.load(url)
+            pixmap.scaled(72, 72, QtCore.Qt.IgnoreAspectRatio)
+            icon = QtGui.QIcon()
+            icon.addPixmap(pixmap)
+            item.setIcon(icon) 
+            pixmap.save((tempPath), 'PNG', 1)
                     
         if currentMode == 1: #If ran dynamically
             url = QtGui.QFileDialog.getOpenFileName(self, 'Open file','',
                                                     ("Select Image: (*.*)"))
             url = os.path.abspath(url)
-            items = listVar.count()
-            rangedList =range(items)
-            rangedList.reverse()
-            for i in rangedList:
-                if listVar.isItemSelected(listVar.item(i))==True:
-                    item = listVar.item(i)
-                    itemtext = str(item.statusTip())
-                    tempDir = tempfile.gettempdir()
-                    tempLocation = os.path.join(tempDir,'AssetManagerTemp')
-                    itemNameExt = os.path.split(str(itemtext))
-                    itemNameExt = itemNameExt[1]
-                    itemName = (itemNameExt.split('.', 1)[0])
-                    tempPath= tempLocation + itemName + 'temp.png'
-                    icon = QtGui.QIcon(url)
-                    icon = QtGui.QIcon()
-                    icon.addFile(url,QtCore.QSize(72,72))
-                    pixmap = icon.pixmap(QtCore.QSize(72,72),
-                                         QtGui.QIcon.Normal, QtGui.QIcon.Off)
-                    item.setIcon(icon)
-                    pixmap.save((tempPath), 'PNG', 1)
-                    with open(tempPath, "rb") as input_file:
-                            blobValue = input_file.read()
-                            data = (itemNameExt, url, blobValue)
-                            cur = database.cursor()
-                            ex = cur.execute
-                            ex('REPLACE INTO Icons(Name, Location, Data) VALUES(%s, %s, %s)', data)
-                    os.remove(str(tempPath))
-        
+            itemtext = str(item.statusTip())
+            valid_chars = "-_. %s%s" % (string.ascii_letters, string.digits)
+            fileName = ''.join(c for c in str(itemtext) if c in valid_chars)
+            tempDir = tempfile.gettempdir()
+            tempLocation = os.path.join(tempDir,'AssetManagerTemp')
+            itemNameExt = os.path.split(str(itemtext))
+            itemNameExt = itemNameExt[1]
+            itemName = (itemNameExt.split('.', 1)[0])
+            tempPath = os.path.join(tempLocation, 'Images')
+            tempPath = os.path.join(tempPath, (str(fileName) + 'temp.png'))
+
+            pixmap = QtGui.QPixmap()
+            pixmap.load(url)
+            pixmap.scaled(72, 72, QtCore.Qt.IgnoreAspectRatio)
+            icon = QtGui.QIcon()
+            icon.addPixmap(pixmap)
+            item.setIcon(icon) 
+            pixmap.save((tempPath), 'PNG', 1)
+
+            blobValue = open(tempPath, 'rb').read()
+            data = (itemNameExt, itemtext, blobValue)
+            PropertiesPopUp.ex('REPLACE INTO Icons(Name, Location, Data) VALUES(%s, %s, %s)', data)                
+            os.remove(str(tempPath))
+
     def setupUi(self, propertiesWindow, listVar, interfaceColor,
                 currentMode, database):
         '''Create properties window UI'''
@@ -462,22 +392,24 @@ class PropertiesPopUp(QtGui.QDialog):
         tempDir = tempfile.gettempdir()
         tempLocation = os.path.join(tempDir,'AssetManagerTemp')
         item = self.findSelection(listVar)
+        valid_chars = "-_. %s%s" % (string.ascii_letters, string.digits)
+        fileName = ''.join(c for c in str(item) if c in valid_chars)
         itemNameExt = os.path.split(str(item))
         itemNameExt = itemNameExt[1]
         itemName = (itemNameExt.split('.', 1)[0])
+        tempFile = os.path.join(tempLocation, 'Properties')
+        tempFile = os.path.join(tempFile,(str(fileName) +'.properties'))
         if currentMode == 0: #If ran locally
-            if os.path.exists(tempLocation + itemName + '.properties'):
-                config = ConfigParser.ConfigParser()
-                wholeFile = str(tempLocation + itemName + '.properties')
-                config.read(wholeFile)
-                nameField = config.get('Name', 'Name')
-                categoryField = config.get('Category', 'Category')
-                tagsField = config.get('Tags', 'Tags')
-                statusField = config.get('Status', 'Status')
-                dateField = config.get('Date Updated', 'Date')
-                authorField = config.get('Author', 'Author')
-                versionField = config.get('Version', 'Version')
-                commentsField = config.get('Comments', 'Comments')
+            if os.path.exists(tempFile):
+                data = FileIO.read(tempFile)
+                nameField = data['name']
+                categoryField = data['category']
+                tagsField = data['tags']
+                statusField = data['status']
+                dateField = data['date']
+                authorField = data['author']
+                versionField = data['version']
+                commentsField = data['comments']
                 PropertiesPopUp.window.nameField.setText(nameField)
                 PropertiesPopUp.window.categoryField.setText(categoryField)
                 PropertiesPopUp.window.tagsField.setText(tagsField)
@@ -488,10 +420,8 @@ class PropertiesPopUp(QtGui.QDialog):
                 PropertiesPopUp.window.commentsField.setText(commentsField)  
         if currentMode == 1: #If ran dynamically
             try:
-                cur = database.cursor()
-                ex = cur.execute
-                ex("SELECT * FROM Properties WHERE File=%s",itemNameExt)
-                data = cur.fetchone()
+                PropertiesPopUp.ex("SELECT * FROM Properties WHERE File=%s",itemNameExt)
+                data = PropertiesPopUp.cur.fetchone()
                 fileField = data[0]
                 locationField = data[1]
                 nameField = data[2]

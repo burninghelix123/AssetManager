@@ -1,4 +1,5 @@
-'''Used to setup text for items
+'''
+Used to setup text for items
 Where info is a list of tuples consisting of a name and a value:
 info =  [ ('Name: ', 'JohnDoe'), ('Age: ', '30') ]
 '''

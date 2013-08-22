@@ -19,10 +19,7 @@ class Dialog(QtGui.QMessageBox):
         Dialog.msgBox.addButton(Dialog.btnYes, QtGui.QMessageBox.YesRole)
         Dialog.btnNo = QtGui.QPushButton(noText)
         Dialog.msgBox.addButton(Dialog.btnNo, QtGui.QMessageBox.NoRole)
-        #Dialog.msgBox.exec_()
-        #self.connect(btnYes, QtCore.SIGNAL('clicked()'), self.runLocally)
-        #self.connect(btnNo, QtCore.SIGNAL('clicked()'), self.runDynamically)
-        
+
     def closeEvent(self, event):
         reply = QtGui.QMessageBox.question(self, 'Message',
             "Are you sure you want to quit?", QtGui.QMessageBox.Yes | 
@@ -32,7 +29,7 @@ class Dialog(QtGui.QMessageBox):
         else:
             event.ignore()
             
-if __name__ == "__main__":
+if __name__ == '__main__':
     import sys 
     app2 = QtGui.QApplication(sys.argv)
     input = Dialog('Store Login Info:', 'Would you like to store the login info for the server?', 'Yes', 'No')

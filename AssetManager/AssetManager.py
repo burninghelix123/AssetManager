@@ -55,11 +55,11 @@ me using the information that was above.0
 
 from PyQt4 import QtCore, QtGui
 import sys
-
+import os
+import tempfile
 from ui import MainWindow
 from ui import MessageDialog
 from functions import CreateLogs
-#from AssetManager.functions import Logging
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
 except AttributeError:
@@ -84,7 +84,17 @@ def runDynamically():
     
 def main():
     '''Start Logging and initiate UI'''
-    logging = CreateLogs.logSetup('AssetManagerLogs')
+    tempDir = tempfile.gettempdir()
+    tempLocation = os.path.join(tempDir,'AssetManagerTemp')   
+    tempLocationProperties =  os.path.join(tempLocation,'Properties')
+    tempLocationImages =  os.path.join(tempLocation,'Images')
+    if not os.path.exists(tempLocation):
+        os.makedirs(tempLocation)
+    if not os.path.exists(tempLocationProperties):
+        os.makedirs(tempLocationProperties)
+    if not os.path.exists(tempLocationImages):
+        os.makedirs(tempLocationImages)
+    logging = CreateLogs.logSetup('AssetManagerLogs', tempLocation)
     app = QtGui.QApplication(sys.argv)
     cm = MessageDialog.Dialog('Select Mode:', 'Select which mode you would like to run the Asset Manager in:\nLocally on one computer or Dynamically through an SQL server', 'Run Locally', 'Run Dynamically')
     MessageDialog.Dialog.msgBox.connect(MessageDialog.Dialog.btnYes, QtCore.SIGNAL('clicked()'), runLocally)

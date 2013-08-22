@@ -32,13 +32,13 @@ def openFileWithTextEditor(self, listVar):
     '''Open file with text editor'''
     fileToOpen = findSelection(listVar)
     fileToOpen = str(fileToOpen)
-    subprocess.Popen("%s %s" % ('notepad', fileToOpen))
+    subprocess.Popen('%s %s' % ('notepad', fileToOpen))
     
 def openFileWithImageViewer(self, listVar):
     '''Open file with Image Viewer'''
     fileToOpen = findSelection(listVar)
     fileToOpen = str(fileToOpen)
-    imageViewerPath = 'C:\\Windows\\System32\\rundll32.exe \"C:\\Program Files\\Windows Photo Viewer\\PhotoViewer.dll\", ImageView_Fullscreen ' + fileToOpen
+    imageViewerPath = 'C:\\Windows\\System32\\rundll32.exe \'C:\\Program Files\\Windows Photo Viewer\\PhotoViewer.dll\', ImageView_Fullscreen ' + fileToOpen
     subprocess.Popen(imageViewerPath)
     
 def openFileWithApp(self, exe, listVar, registryLookupNeeded, keyNumber, program, program2, program3, program4):
@@ -69,7 +69,7 @@ def openFileWithApp(self, exe, listVar, registryLookupNeeded, keyNumber, program
             appPath = programPath[0] + exe
     if registryLookupNeeded == 0:
         appPath = exe
-    subprocess.Popen("%s %s" % (appPath, fileToOpen))
+    subprocess.Popen('%s %s' % (appPath, fileToOpen))
     
 def openFileWithCustom(self, listVar, customPrograms, customActions, customName, window, url, noUrl, index):
     '''Add program to Open With list'''

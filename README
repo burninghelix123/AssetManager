@@ -47,9 +47,36 @@ Password:        password
 To install and run AssetManager just execute 'runner.py'.
 =========================================================
 To Uninstall navigate to your python installation and
-delete the "AssetManager" folder inside \Lib\site-packages\.
-Delete the "AssetManagerTemp" folder located in your Temp directory,
-typically in C:\Users\[UserName]\AppData\Local\Temp\.
+delete the AssetManager folder inside \Lib\site-packages\.
 =========================================================
 For any additional information, problems, or advice feel free to contact
 me using the information that was above.
+
+Changes:
+
+v1.4 - Large Update and Bug Fixes 8/21/13
+
+- Connecting to the server is now done using a reusable template
+- File information is now stored and location based on its address/location so files with the same name can coexist
+- Icon loading from the server is now loaded directly from the server instead of a temporary location on the users computer
+- File Writing and Reading is now done using a reusable template
+- Refreshing files after connecting and disconnecting from the server now change correctly
+- Properties and image files now stored in separate folders when run locally
+- Recreated function to add files and made it resuable
+- ItemDisplay recreated and is now a reusable template
+- Fixed some bugs when changing modes from a server to locally
+- PropertiesWindow functions recreated
+- More cross platform path changes
+- More redundant code removed
+
+Previous Fixes:
+ v1.3 - Created one template to be used for several dialogs 7/8/13
+
+- Repurposed RegistryLookup to be able to lookup custom programs along with a more accurate result
+- Added functionality for the user to add custom applications to the open with menu
+- Added window under Display>Manage Applications to be able to show and hide applications that have been added but not
+currently needed
+- OpenAsset now using one template to load programs
+- Everything should now be cross-platform other then the RegistryLookup (In process of installing Linux to further test)
+- Directory for settings and temp files moved to computers temporary directory and is now cross-platform
+- Several Bug Fixes and redundant code removed

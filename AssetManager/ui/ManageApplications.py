@@ -31,7 +31,8 @@ class ManageApplications(QtGui.QListView):
         actions = ManageApplications.window.openWithSimulations.actions()
         for action in actions:
             visible = action.isVisible()
-            if not action.text() == '':
+            text = action.text()
+            if text.strip():
                 item = QtGui.QStandardItem(action.text())
                 if CustomUi.UiColors.interfaceColor == 3:
                     item.setForeground(CustomUi.ColorPicker.col4)
