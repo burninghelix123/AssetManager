@@ -1,3 +1,12 @@
+'''Dialog for user input of login information'''
+'''
+Values are returned as:
+InputDialog.username
+InputDialog.password
+InputDialog.address
+InputDialog.database
+'''
+
 from PyQt4 import QtCore, QtGui
 
 try:
@@ -92,10 +101,3 @@ class Input_Dialog(QtGui.QDialog):
         Input_Dialog.address = None
         Input_Dialog.database = None
         Input_Dialog.dialog.close()
-   
-if __name__ == '__main__':
-    import sys
-    app = QtGui.QApplication(sys.argv)
-    ui = Input_Dialog()
-    ui.exec_()
-    sys.exit(app.exec_())

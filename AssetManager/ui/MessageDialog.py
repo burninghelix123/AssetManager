@@ -1,3 +1,9 @@
+'''Creates a simple dialog with a message and two buttons'''
+'''
+MessageDialog.Dialog('Message:',
+                    'Attention this is a message!',
+                    'Ok', 'Cancel')
+'''
 from PyQt4 import QtCore, QtGui
 
 class Dialog(QtGui.QMessageBox):

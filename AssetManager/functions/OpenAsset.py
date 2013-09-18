@@ -2,14 +2,17 @@
 import os
 import re
 import subprocess
-from PyQt4 import QtCore, QtGui
-from ..functions import RegistryLookup
 import tempfile
 import sys
+import FileIO
+from PyQt4 import QtCore, QtGui
+from ..functions import RegistryLookup
+from ..functions import MainFunctions
+from ..functions import FindSelection
 
 def openFile(self, listVar):
     '''Open selected file with default application'''
-    fileToOpen = findSelection(listVar)
+    fileToOpen = FindSelection.findSelection(listVar)
     if sys.platform.startswith('darwin'):
         subprocess.call(('open', str(fileToOpen)))
     elif os.name == 'nt':
@@ -17,67 +20,58 @@ def openFile(self, listVar):
     elif os.name == 'posix':
         subprocess.call(('xdg-open', str(fileToOpen)))
 
-def findSelection(listVar):
-    '''Find selected item/asset'''
-    items = listVar.count()
-    fileToOpen = ''
-    selectedItems=[]
-    rangedList =range(items)
-    for i in rangedList:
-        if listVar.isItemSelected(listVar.item(i))==True:
-            fileToOpen = listVar.item(i).statusTip()
-    return(fileToOpen)
-    
 def openFileWithTextEditor(self, listVar):
     '''Open file with text editor'''
-    fileToOpen = findSelection(listVar)
+    fileToOpen = FindSelection.findSelection(listVar)
     fileToOpen = str(fileToOpen)
     subprocess.Popen('%s %s' % ('notepad', fileToOpen))
     
 def openFileWithImageViewer(self, listVar):
     '''Open file with Image Viewer'''
-    fileToOpen = findSelection(listVar)
+    fileToOpen = FindSelection.findSelection(listVar)
     fileToOpen = str(fileToOpen)
     imageViewerPath = 'C:\\Windows\\System32\\rundll32.exe \'C:\\Program Files\\Windows Photo Viewer\\PhotoViewer.dll\', ImageView_Fullscreen ' + fileToOpen
     subprocess.Popen(imageViewerPath)
     
 def openFileWithApp(self, exe, listVar, registryLookupNeeded, keyNumber, program, program2, program3, program4):
     '''Open file with Selected Application'''
-    fileToOpen = findSelection(listVar)
+    fileToOpen = FindSelection.findSelection(listVar)
     fileToOpen = str(fileToOpen)
     if registryLookupNeeded == 1:
         programPath = RegistryLookup.findPaths(keyNumber, program, program2, program3, program4)
-        if program == ['Maya']:
-            if len(programPath) > 1:
-                for item in programPath:
-                    if not re.search('FBX', item):
-                        appPath = item + exe
-        elif program == ['Nuke']:
-
-            nukePath = os.path.split(programPath[0])
-            nukePath = os.path.split(nukePath[0])
-            nukeExe = nukePath[len(nukePath)-1]
-            if re.search('v', nukeExe):
-                nukeExe = (nukeExe.split('v', 1)[0]) + '.exe' 
-            else:
-                nukeExe = nukeExe + '.exe'           
-            appPath = programPath[0] + nukeExe
-        elif program == ['Houdini']:
-            appPath = re.sub(r'Uninstall Houdini.exe','',programPath[0])
-            appPath = appPath + exe
-        else:
-            appPath = programPath[0] + exe
+        for item in programPath:
+            if re.search('\\\\', item):
+                if not re.search('FBX', item):
+                    if not re.search('Setup.exe', item):
+                        if not re.search('MayaPlugIn', item):
+                            if not re.search('unins000', item):
+                                if program[0] == 'Maya':
+                                    appPath = item + exe
+                                if program[0] == 'Houdini':
+                                    appPath = re.sub(r'Uninstall Houdini.exe','',item)
+                                    appPath = appPath + exe
+                                if program[0] == 'Nuke':
+                                    nukePath = os.path.split(item)
+                                    nukePath = os.path.split(nukePath[0])
+                                    nukeExe = nukePath[len(nukePath)-1]
+                                    if re.search('v', nukeExe):
+                                        nukeExe = (nukeExe.split('v', 1)[0]) + '.exe' 
+                                    else:
+                                        nukeExe = nukeExe + '.exe'           
+                                    appPath = item + nukeExe
     if registryLookupNeeded == 0:
         appPath = exe
-    subprocess.Popen('%s %s' % (appPath, fileToOpen))
-    
+    try:
+        subprocess.Popen('%s %s' % (appPath, fileToOpen))
+    except:
+        pass
 def openFileWithCustom(self, listVar, customPrograms, customActions, customName, window, url, noUrl, index):
     '''Add program to Open With list'''
     if noUrl == 0:
         url = QtGui.QFileDialog.getOpenFileName(self, 'Select a program to open with:')
     customPrograms += [url]
     url = customPrograms[-1]
-    url = os.path.abspath(url)
+    url = os.path.abspath(str(url))
     itemNameExt = os.path.split(url)
     itemNameExt = itemNameExt[1]
     itemName = (itemNameExt.split('.', 1)[0])
@@ -97,18 +91,15 @@ def writeCustomToFile(customPrograms, customName):
     '''Store custom application information'''
     tempDir = tempfile.gettempdir()
     tempLocation = os.path.join(tempDir,'AssetManagerTemp')
-    tempLocation = os.path.join(tempLocation,'CustomMenuItems.ini')
-    file = open(tempLocation, 'w+')
-    file.write('[CustomPrograms]\n')
-    file.write('Items = \n')
+    tempLocation = os.path.join(tempLocation,'CustomMenuItems.ini')    
+    data = '#Custom Application:'
+    section = ['CustomPrograms', 'CustomName']
+    key = ['Programs', '\n', 'Names']
+    value = []
     for item in customPrograms:
-        file.write('\t')
-        file.write(item)
-        file.write('\n')
-    file.write('[CustomName]\n')
-    file.write('Items = \n')
+        value.append(item)
+    value.append('\n')
     for item in customName:
-        file.write('\t')
-        file.write(item)
-        file.write('\n')
-    file.close()   
+        value.append(item)
+    data = FileIO.build(data, section, key, value)
+    FileIO.write(data, tempLocation)

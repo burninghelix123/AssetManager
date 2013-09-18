@@ -1,1 +1,1 @@
-__all__ = ["DatabaseConnect", "DragAndDrop", "ItemDisplay", "CreateLogs", "MainFunctions", "OpenAsset", "RegistryLookup", "FileIO", "AddItem"]
+__all__ = ["DatabaseConnect", "DragAndDrop", "FindSelection", "ItemDisplay", "CreateLogs", "MainFunctions", "OpenAsset", "RegistryLookup", "FileIO", "AddItem"]

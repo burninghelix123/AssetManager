@@ -1,3 +1,5 @@
+'''Adds the capability to manage what programs display in the open with menu'''
+
 from PyQt4 import QtCore
 from PyQt4 import QtGui
 import sys
@@ -31,7 +33,7 @@ class ManageApplications(QtGui.QListView):
         actions = ManageApplications.window.openWithSimulations.actions()
         for action in actions:
             visible = action.isVisible()
-            text = action.text()
+            text = str(action.text())
             if text.strip():
                 item = QtGui.QStandardItem(action.text())
                 if CustomUi.UiColors.interfaceColor == 3:
@@ -52,17 +54,6 @@ class ManageApplications(QtGui.QListView):
         if CustomUi.UiColors.interfaceColor == 3: #UI Custom Layout
             appManager.setStyleSheet('background-color: %(color)s;' % {'color':CustomUi.ColorPicker.col.name()})
         
-    def findSelection(self, listVar):
-        '''Retrieve selected item'''
-        items = listVar.count()
-        fileToOpen = ''
-        selectedItems = []
-        rangedList = range(items)
-        for i in rangedList:
-            if listVar.isItemSelected(listVar.item(i)) == True:
-                fileToOpen = listVar.item(i)
-        return(fileToOpen)
-    
     def writeToFile(self):
         '''Saves visible and hidden programs to file to be loaded on next program start'''
         actions = ManageApplications.window.openWithSimulations.actions()

@@ -9,10 +9,9 @@ from ..ui import MessageDialog
 from ..ui import InputDialog
 from ..functions import AddItem
 from ..functions import DatabaseConnect
-
+from ..functions import FindSelection
 
 class MainFunctions():
-    
     def __init__(self, window, mainWindow, currentMode, database,
                  copiedItems, propertiesWindow, cur, ex):
         MainFunctions.database = database
@@ -33,7 +32,7 @@ class MainFunctions():
         url = QtGui.QFileDialog.getOpenFileName(MainFunctions.window, 'Select asset file to add',
                                                 '', ('Select Asset: (*.Asset)'))
         fileEntry = QtGui.QListWidgetItem(url, MainFunctions.window.listWidget_2)
-        url = os.path.abspath(url)
+        url = os.path.abspath(str(url))
         itemNameExt = os.path.split(url)
         itemNameExt = itemNameExt[1]
         itemName = (itemNameExt.split('.', 1)[0])
@@ -50,7 +49,7 @@ class MainFunctions():
             event.ignore()          
 
     def connectToDB(self):
-        '''Toggle between locally and dynamically using the program'''
+        '''Toggle between locally and dynamically inside the Asset Manager'''
         if MainFunctions.currentMode == 0: #If run locally
             validLogin = False
             username = MainFunctions.window.username_lineEdit.text()
@@ -85,26 +84,22 @@ class MainFunctions():
         for i in rangedList:
             if currentTab.isItemSelected(currentTab.item(i))==True:
                 MainFunctions.copiedItems.append(str(currentTab.item(i).statusTip()))
-                    
-    def deleteEntry(self, listVar):
+
+    def deleteItem(self, listVar):
         '''Delete selected item'''
+        if not type(listVar) == QtGui.QListWidget:
+            currentTab = listVar.currentIndex()
+            currentTab = str(listVar.tabText(currentTab).toLower())
+            currentTab = 'MainFunctions.window.' + currentTab + '_listView'
+            currentTab = eval(currentTab)
+            listVar = currentTab
         items = listVar.count()
-        selectedItems=[]
-        rangedList =range(items)
+        rangedList = range(items)
         rangedList.reverse()
         for i in rangedList:
             if listVar.isItemSelected(listVar.item(i))==True:
                 listVar.takeItem(i)
-
-    def deleteItem(self, listVar):
-        '''Delete selected item'''
-        currentTab = MainFunctions.window.main_tabWidget.currentIndex()
-        currentTab = str(MainFunctions.window.main_tabWidget.tabText(currentTab).toLower())
-        currentTab = 'MainFunctions.window.' + currentTab + '_listView'
-        currentTab = eval(currentTab)
-        item = currentTab.takeItem(currentTab.currentRow())
-        item = None
-            
+        
     def fileProperties(self, listVar):
         '''Open file properties'''
         MainFunctions.propertiesWindow = QtGui.QDialog()
@@ -116,26 +111,15 @@ class MainFunctions():
                                                    MainFunctions.cur,
                                                    MainFunctions.ex)
         self.var = MainFunctions.propertiesWindow.exec_()
-
-    def findSelection(self, listVar):
-        '''Find selected item/asset'''
-        items = listVar.count()
-        fileToOpen = ''
-        selectedItems=[]
-        rangedList =range(items)
-        for i in rangedList:
-            if listVar.isItemSelected(listVar.item(i))==True:
-                fileToOpen = listVar.item(i).statusTip()
-        return(fileToOpen)
     
     def importAssetFile(self, var):
         '''Import Asset manager file into project'''
-        if var == 0:
+        if var == 0: #Import Asset File from menu
             fileToOpen = QtGui.QFileDialog.getOpenFileName(MainFunctions.window, 'Open file',
                                                            '', ('(*.asset)'))
             fileToOpen = str(fileToOpen)
-        if var == 1:
-            fileToOpen = self.findSelection(MainFunctions.window.listWidget_2)
+        if var == 1: #Import Asset File from listview
+            fileToOpen = FindSelection.findSelection(MainFunctions.window.listWidget_2)
             fileToOpen = str(fileToOpen)
         if fileToOpen.strip():
             self.readAssets(fileToOpen)
@@ -145,48 +129,47 @@ class MainFunctions():
         files = QtGui.QFileDialog.getOpenFileNames(None, 'Open file',
                                                    '', (''+listName+' (*.*)'))
         for url in files:
-            AddItem.addItemToList(url, listVar, MainFunctions.currentMode, MainFunctions.cur, MainFunctions.ex)
+            AddItem.addItemToList(url, listVar, MainFunctions.currentMode,
+                                  MainFunctions.cur, MainFunctions.ex)
 
     def itemDropped(self, l, listVar):
         '''Import item when drag and dropped'''
-        selectedItem = self.findSelection(listVar)
+        selectedItem = FindSelection.findSelection(listVar)
         for url in l:
-            AddItem.addItemToList(url, listVar, MainFunctions.currentMode, MainFunctions.cur, MainFunctions.ex)
+            AddItem.addItemToList(url, listVar, MainFunctions.currentMode,
+                                  MainFunctions.cur, MainFunctions.ex)
 
     def openAssetFile(self, var):
         '''Open Asset Manager File'''
-
         exists = 0
-        if var == 0:
+        if var == 0: #Open Asset file from menu
             fileToOpen = QtGui.QFileDialog.getOpenFileName(MainFunctions.window, 'Open file',
                                                            '', ('(*.asset)'))
-        if var == 1:
-            fileToOpen = self.findSelection(MainFunctions.window.listWidget_2)
+        if var == 1: #Open Asset file in listview
+            fileToOpen = FindSelection.findSelection(MainFunctions.window.listWidget_2)
             fileToOpen = str(fileToOpen)
         if fileToOpen.strip():
             for item in MainFunctions.tabs:
                 listVar = getattr(MainFunctions.window, item)
                 items = listVar.count()
                 if items > 0:
-                    exists = 1
-            if exists == 1:
-                reply = QtGui.QMessageBox.question(MainFunctions.window, 'Message',
-                                                   'Are you sure you want to open?\nDoing '
-                                                   'so will clear current workspace!',
-                                                   QtGui.QMessageBox.Yes | 
-                QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-                if reply == QtGui.QMessageBox.Yes:
-                    for item in MainFunctions.tabs:
-                        listVar = getattr(MainFunctions.window, item)
-                        items = listVar.count()
-                        selectedItems=[]
-                        rangedList =range(items)
-                        rangedList.reverse()
-                        for i in rangedList:
-                            listVar.takeItem(i)
+                    reply = QtGui.QMessageBox.question(MainFunctions.window, 'Message',
+                                                       'Are you sure you want to open?\nDoing '
+                                                       'so will clear current workspace!',
+                                                       QtGui.QMessageBox.Yes | 
+                    QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+                    if reply == QtGui.QMessageBox.Yes:
+                        for item in MainFunctions.tabs:
+                            listVar = getattr(MainFunctions.window, item)
+                            items = listVar.count()
+                            selectedItems=[]
+                            rangedList =range(items)
+                            rangedList.reverse()
+                            for i in rangedList:
+                                listVar.takeItem(i)
+                        self.readAssets(fileToOpen)
+                else:
                     self.readAssets(fileToOpen)
-            if exists == 0:
-                self.readAssets(fileToOpen)
 
     def pasteItem(self):
         '''Paste selected item'''
@@ -203,6 +186,7 @@ class MainFunctions():
         pass
 
     def readAssets(self, fileToOpen):
+        '''Reads files from an Asset File'''
         fileToOpen = str(fileToOpen)
         config = ConfigParser.ConfigParser()
         config.read(fileToOpen)
@@ -220,7 +204,7 @@ class MainFunctions():
                         AddItem.addItemToList(str(item), getattr(MainFunctions.window, str(listName)), MainFunctions.currentMode, MainFunctions.cur, MainFunctions.ex)
 
     def refreshItems(self):
-        '''Refresh items properties'''
+        '''Refresh items properties and icon'''
         for item in MainFunctions.tabs:
             listVar = getattr(MainFunctions.window, item)
             items = listVar.count()
@@ -234,14 +218,9 @@ class MainFunctions():
                     listVar.takeItem(i)
                 for url in urls:    
                     AddItem.addItemToList(url, listVar, MainFunctions.currentMode, MainFunctions.cur, MainFunctions.ex)
-
-    def removeFile(self):
-        '''Remove file from list'''
-        item = MainFunctions.window.listWidget_2.takeItem(MainFunctions.window.listWidget_2.currentRow())
-        item = None
-        
+  
     def saveAssetFile(self):
-        '''Save asset manager file to disc'''
+        '''Save asset manager file'''
         fileToSave = QtGui.QFileDialog.getSaveFileName(MainFunctions.window, 'Save file',
                                                        '', ('(*.asset)'))
         file = open(fileToSave, 'w+')
@@ -272,12 +251,13 @@ class MainFunctions():
                 fileEntry.setStatusTip(str(file))
 
     def sortAscending(self):
+        '''Sorts Files By Ascending'''
         for item in MainFunctions.tabs:
             listVar = getattr(MainFunctions.window, item)
             listVar.sortItems(0)
             
     def sortDescending(self):
+        '''Sorts Files By Descending'''
         for item in MainFunctions.tabs:
             listVar = getattr(MainFunctions.window, item)
             listVar.sortItems(1)
-                    

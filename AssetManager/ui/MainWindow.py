@@ -180,6 +180,7 @@ class Ui_MainWindow(QtGui.QMainWindow):
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.main_tabWidget.setGeometry(QtCore.QRect(210, 5, 570, 565))
         self.main_tabWidget.setObjectName(_fromUtf8("main_tabWidget"))
+        self.main_tabWidget.setMovable(True)
         for index, listVar in enumerate(listViews):
             tab = getattr(self, listVar + '_tab')
             tab.setObjectName(_fromUtf8(listVar + '_tab'))
@@ -229,7 +230,7 @@ class Ui_MainWindow(QtGui.QMainWindow):
                        (getattr(Ui_MainWindow.window, 'actionOpenWithHoudini' + listVars)), (getattr(Ui_MainWindow.window, 'actionOpenWithNuke' + listVars)),
                        (getattr(Ui_MainWindow.window, 'actionOpenWithPhotoshop' + listVars)), (getattr(Ui_MainWindow.window, 'actionOpenWithTextEditor' + listVars)),
                        (getattr(Ui_MainWindow.window, 'actionOpenWithImageViewer' + listVars)), (getattr(Ui_MainWindow.window, 'actionOpenWithCustom' + listVars))]
-            self.contextActions(actions, view, MainWindowFunctions, customPrograms, customActions, customName, index)
+            self.contextActions(actions, self.main_tabWidget, view, MainWindowFunctions, customPrograms, customActions, customName, index)
         self.manageApplications()
         self.setupUiElements(MainWindowFunctions)
 
@@ -237,21 +238,22 @@ class Ui_MainWindow(QtGui.QMainWindow):
         tempDir = tempfile.gettempdir()
         tempLocation = os.path.join(tempDir,'AssetManagerTemp')
         tempLocation = os.path.join(tempLocation,'ManageApplications.ini')
-        config = ConfigParser.ConfigParser()
-        config.read(tempLocation)
-        programs = config.items('Programs')
-        menus = ['openWithProjects', 'openWithModels', 'openWithShaders', 'openWithImages', 'openWithVideos', 'openWithAudio', 'openWithScripts', 'openWithSimulations']
-        for menu in menus:
-            actions = getattr(Ui_MainWindow.window, menu)
-            actions = actions.actions()
-            for program in programs:
-                for action in actions:
-                    if program[0].title() == action.text():
-                        state = program[1].title()
-                        if state == 'True':
-                            action.setVisible(True)
-                        if state == 'False':
-                            action.setVisible(False)
+        if os.path.exists(tempLocation):
+            config = ConfigParser.ConfigParser()
+            config.read(tempLocation)
+            programs = config.items('Programs')
+            menus = ['openWithProjects', 'openWithModels', 'openWithShaders', 'openWithImages', 'openWithVideos', 'openWithAudio', 'openWithScripts', 'openWithSimulations']
+            for menu in menus:
+                actions = getattr(Ui_MainWindow.window, menu)
+                actions = actions.actions()
+                for program in programs:
+                    for action in actions:
+                        if program[0].title() == action.text():
+                            state = program[1].title()
+                            if state == 'True':
+                                action.setVisible(True)
+                            if state == 'False':
+                                action.setVisible(False)
   
     def setupUiElements(self, MainWindowFunctions):
         '''Setup Ui elements attributes for sidebar'''
@@ -322,7 +324,6 @@ class Ui_MainWindow(QtGui.QMainWindow):
         self.removeFile_pushButton.setObjectName(_fromUtf8("removeFile_pushButton"))
         self.connect(self.setFolder_pushButton, QtCore.SIGNAL("clicked()"), MainWindowFunctions.setFolder)  
         self.connect(self.addFile_pushButton, QtCore.SIGNAL("clicked()"), MainWindowFunctions.addFile)  
-        self.connect(self.removeFile_pushButton, QtCore.SIGNAL("clicked()"), MainWindowFunctions.removeFile)
         self.setupUiMain(MainWindowFunctions)
 
     def setupUiMain(self, MainWindowFunctions):
@@ -336,10 +337,11 @@ class Ui_MainWindow(QtGui.QMainWindow):
         self.listWidget_2 = QtGui.QListWidget(self.scrollAreaWidgetContents_10)
         self.listWidget_2.setMinimumSize(QtCore.QSize(140, 200))
         self.listWidget_2.setObjectName(_fromUtf8("listWidget_2"))
+        self.connect(self.removeFile_pushButton, QtCore.SIGNAL("clicked()"), lambda : MainWindowFunctions.deleteItem(self.listWidget_2))
         self.verticalLayout_2.addWidget(self.listWidget_2)
         self.projectloc_scrollArea.setWidget(self.scrollAreaWidgetContents_10)
         Ui_MainWindow.mainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtGui.QMenuBar(Ui_MainWindow.mainWindow)
+        self.menubar = QtGui.QMenuBar()
         self.menubar.setGeometry(QtCore.QRect(0, 0, 778, 20))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menuFile = QtGui.QMenu(self.menubar)
@@ -405,7 +407,7 @@ class Ui_MainWindow(QtGui.QMainWindow):
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuDisplay.menuAction())
         self.menubar.addAction(self.menuSort.menuAction())
-        self.main_tabWidget.setCurrentIndex(7)
+        self.main_tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Ui_MainWindow.mainWindow)
         self.listWidget_2.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         self.actionOpenAssetFile = QtGui.QAction("Open", self.listWidget_2)        
@@ -419,12 +421,12 @@ class Ui_MainWindow(QtGui.QMainWindow):
         self.actionRemoveAssetFile = QtGui.QAction("Remove", self.listWidget_2)        
         self.listWidget_2.addAction(self.actionRemoveAssetFile)
         self.actionRemoveAssetFile.setStatusTip('Remove asset file')
-        self.actionRemoveAssetFile.triggered.connect(MainWindowFunctions.removeFile)
+        self.actionRemoveAssetFile.triggered.connect(lambda : MainWindowFunctions.deleteItem(self.listWidget_2))
         self.copyAction.triggered.connect(MainWindowFunctions.copyItem)
         self.pasteAction.triggered.connect(MainWindowFunctions.pasteItem)
         manageApplications = ManageApplications.ManageApplications(Ui_MainWindow.window)
         self.programPreferences.triggered.connect(lambda : ManageApplications.main(manageApplications))
-        self.deleteAction.triggered.connect(MainWindowFunctions.deleteItem)
+        self.deleteAction.triggered.connect(lambda : MainWindowFunctions.deleteItem(self.main_tabWidget))
         self.listWidget_2.setDragDropMode(QtGui.QAbstractItemView.InternalMove);
         self.populateLoginInfo()
         uiColors.interfaceColor1(Ui_MainWindow.window, Ui_MainWindow.mainWindow)
@@ -447,7 +449,7 @@ class Ui_MainWindow(QtGui.QMainWindow):
             self.password_lineEdit.setText(password)
             self.database_lineEdit.setText(databasename)
             
-    def contextActions(self, actions, listVar, MainWindowFunctions, customPrograms, customActions, customName, index):
+    def contextActions(self, actions, tabWidget,listVar, MainWindowFunctions, customPrograms, customActions, customName, index):
         '''Setup actions for menus'''
         listVar.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         listVar.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
@@ -492,7 +494,7 @@ class Ui_MainWindow(QtGui.QMainWindow):
         actions[0].triggered.connect(lambda : OpenAsset.openFile(self, listVar))
         actions[2].triggered.connect(lambda : MainWindowFunctions.previewFile(listVar))
         actions[3].triggered.connect(lambda : MainWindowFunctions.fileProperties(listVar))
-        actions[5].triggered.connect(lambda : MainWindowFunctions.deleteEntry(listVar))
+        actions[5].triggered.connect(lambda : MainWindowFunctions.deleteItem(tabWidget))
         actions[4].triggered.connect(lambda : MainWindowFunctions.importEntry("Projects", listVar))
         actions[0].setEnabled(False)
         actions[1].setEnabled(False)
@@ -503,17 +505,13 @@ class Ui_MainWindow(QtGui.QMainWindow):
         tempLocation = os.path.join(tempDir,'AssetManagerTemp')
         tempLocation = os.path.join(tempLocation,'CustomMenuItems.ini')
         if os.path.exists(tempLocation):
-            config = ConfigParser.ConfigParser()
-            config.read(tempLocation)
-            customPrograms = config.get('CustomPrograms', 'Items')
-            customActions = config.get('CustomName', 'Items')
-            customName = config.get('CustomName', 'Items')
+            data = FileIO.read(tempLocation)
+            customPrograms = data['programs']
+            customActions = data['names']
+            customName = customActions
             customPrograms = customPrograms.split('\n')
-            customPrograms = customPrograms[1:]
             customActions = customActions.split('\n')
-            customActions = customActions[1:]
             customName = customName.split('\n')
-            customName = customName[1:]
             actionSet = []
             itemName = []
             programSet = []

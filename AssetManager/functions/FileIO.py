@@ -1,12 +1,23 @@
-import ConfigParser
+'''Reads and writes ini files'''
+'''Uses \n to separate keys and values'''
+''' 
+    data = '#Example:'
+    section = ['Colors', 'Flavors']
+    key = ['Dark', 'Light', '\n', 'Sweet', 'Salty'] 
+    value = ['Black', 'Blue', '\n', 'White, 'Yellow', '\n', 'Candy', 'Soda', '\n', 'Peanuts', 'Chips'] 
+    data = build(data, section, key, value)
+    write(data, location)
+'''
+
+import ConfigParser    
 
 def addSection(data, section):
-    "Add a section delimiter to the INI file"
+    '''Adds Section to log file'''
     data += "\n\n[" + section + "]"
     return(data)
 
 def addKey(data, key, value):
-    "Writes a string to the INI file"
+    '''Adds Key and values to log file'''
     if type(value) == list:
         data += '\n' + key + ' = ' 
         for item in value:
@@ -16,6 +27,7 @@ def addKey(data, key, value):
     return(data)
 
 def build(data, section, key, value):
+    '''Builds log file'''
     for onesection in section:
         data = addSection(data, onesection)
         for number, onekey in enumerate(key):
@@ -33,11 +45,13 @@ def build(data, section, key, value):
     return(data)
 
 def write(data, location):
+    '''Writes log file'''
     file = open(location, 'w+')
     file.write(data)
     file.close
     
-def read(location):    
+def read(location):
+    '''Reads log file'''
     dict = {}
     config = ConfigParser.ConfigParser()
     config.read(location)
@@ -47,15 +61,3 @@ def read(location):
         for onekey in keys:
             dict[onekey] = config.get(onesection, onekey)
     return(dict)
-
-if __name__ == '__main__':
-    
-    data = '#Header Information'
-    section = ['cake', 'shapes', 'colors'] 
-    key = ['chocolate', 'vanilla', 'strawberry', '\n', 'circle', 'square', 'triangle', '\n', 'red', 'black', 'yellow', 'blue']
-    value = ['1234','2234','3234','\n','\n','\n','1','\n','1','2','3','\n','1','2','3','\n','1','2','3','\n','1','2','3','\n','1','2','3','\n','1','2','3','\n',] 
-    data = build(data, section, key, value)
-    
-    location = 'C:/users/helix/test.txt'
-    write(data, location)
-    data = read(location)

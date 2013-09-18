@@ -1,22 +1,37 @@
-'''Lookup paths for programs for Asset Manager'''
+'''Lookup paths for programs by searching for it in the Registry'''
+'''
+RegistryLookup.findPaths(0 = Lookup by Uninstall or 1 = Lookup by AppPath Registry,
+                        ['Program Name'] = ['Maya'], ['Program Version 1'], 
+                        ['Program Version 2'], ['Program Version 3'])
+RegistryLookup.findPaths(0, ['AVG'], ['Maya2012'], ['Maya2013'], ['Maya2014'])                        
+'''
 
 from PyQt4 import QtCore, QtGui
-from _winreg import *
+from sys import platform as _platform
+import os
 import unicodedata
 import re
+if _platform == "win32":
+    from _winreg import * 
 lookupFailed = False
 
 def findPaths(keyNumber, program, program2, program3, program4):
     '''Find paths to programs'''
-    keyList1 = lookupKeys()
-    keyList2 = lookupKeys2()
-
-    if keyNumber == 1:
-        keyList = keyList1
-    if keyNumber == 2:
-        keyList = keyList2
-    path = lookupGenericPath(keyList, keyNumber, program, program2, program3, program4)    
-    return path
+    if _platform == "linux" or _platform == "linux2":
+        # Future Linux Program Lookup
+        pass
+    elif _platform == "darwin":
+        # Future OS X Program Lookup
+        pass
+    elif _platform == "win32":
+        keyList1 = lookupKeys()
+        keyList2 = lookupKeys2()
+        if keyNumber == 1:
+            keyList = keyList1
+        if keyNumber == 2:
+            keyList = keyList2
+        path = lookupGenericPath(keyList, keyNumber, program, program2, program3, program4)    
+        return path
 
 def lookupKeys():
     '''Read in registry information from Uninstall Registry'''
@@ -29,40 +44,15 @@ def lookupKeys():
     keys = QueryInfoKey(masterKey)
     for key in range(keys[0]):
         oneKey = str(EnumKey(masterKey, key))
-        allKey += [oneKey]
-    for key in range(0,len(allKey),1):
         newMasterKey = OpenKey(HKEY_LOCAL_MACHINE,
-                               r'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\'+(allKey[key]),
+                               r'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\'+oneKey,
                                0, KEY_READ)
-        try:
-            value = QueryValueEx(newMasterKey, 'DisplayName')
-        except:
-            value = None
-        try:
-            value2 = QueryValueEx(newMasterKey, 'InstallLocation')
-        except:
-            value2 = None
-        try:
-            value3 = QueryValueEx(newMasterKey, 'UninstallString')
-        except:
-            value3 = None
-        entry = () 
-        if not value == None:
-            entry += value,
-        if not value2 == None:
-            entry += value2,
-        if not value3 == None:
-            entry += value3,
-        if not (value == None and value2 == None and value3 == None):
+        for location in ['DisplayName','InstallLocation','UninstallString']:
             try:
-                keyList += (entry),
+                keyList.append(QueryValueEx(newMasterKey, location))
             except:
-                pass                   
+                pass    
     return keyList
-try:
-    keyList = lookupKeys()
-except:
-    lookupFailed = True
     
 def lookupKeys2():
     '''Read in remaining registry information from App Paths Registry'''
@@ -75,73 +65,41 @@ def lookupKeys2():
     keys = QueryInfoKey(masterKey)
     for key in range(keys[0]):
         oneKey = str(EnumKey(masterKey, key))
-        allKey += [oneKey]
-    for key in range(0,len(allKey),1):
         newMasterKey = OpenKey(HKEY_LOCAL_MACHINE,
-                               r'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\'+(allKey[key]),
+                               r'SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\'+oneKey,
                                0, KEY_READ)
         try:
-            value = QueryValueEx(newMasterKey, 'Path')
+            keyList2.append(QueryValueEx(newMasterKey, 'Path'))
         except:
-            value = None
-        entry = ()
-        if not value == None:
-            entry += ((allKey[key]),),
-            entry += (value),
-            try:
-                keyList2 += (entry),
-            except:
-                pass        
+            pass
     return keyList2
 
 def lookupGenericPath(keyList, keyNumber, program, program2, program3, program4):
     '''Template to lookup program's path'''
-    genericPath = []
-    for number, name in enumerate(program):
-        matches = []
-        matchFound = False
-        for item in keyList:
-            searchItem = item[0][0]
-            if re.search(program[number], searchItem):
-                matches += [item]
-        for count, list in enumerate(matches):
-            match = list[0][0]
-            if re.search(program2[number], match):
-                if keyNumber == 1:
-                    genericPath += [list[1]]                        
-                if keyNumber == 2:
-                    genericPath += [list[1]]
-                matchFound = True
-        if matchFound == False:
-            for count, list in enumerate(matches):
-                match = list[0][0]
-                if re.search(program3[number], match):
-                    if keyNumber == 1:
-                        genericPath += [list[1]]                        
-                    if keyNumber == 2:
-                        genericPath += [list[1]]
-                    matchFound = True
-        if matchFound == False:
-            for count, list in enumerate(matches):
-                match = list[0][0]
-                if re.search(program4[number], match):
-                    if keyNumber == 1:
-                        genericPath += [list[1]]                        
-                    if keyNumber == 2:
-                        genericPath += [list[1]]
-                    matchFound = True
-        if matchFound == False:
-            for count, list in enumerate(matches):
-                if keyNumber == 1:
-                    genericPath += [list[1]]
-                if keyNumber == 2:
-                    genericPath += [list[1]]
     programPaths = []
-    for path in genericPath:
-        path = unicodedata.normalize('NFKD', path[0]).encode('ascii','ignore')
-        programPaths += [path]
-    programs = []
-    for i in programPaths:
-        if i not in programs:
-            programs.append(i)
-    return programs
+    for item in keyList:
+        searchItem = item[0]
+        matchFound = False
+        if re.search(program[0], searchItem):
+            '''Program Name Match'''
+            if re.search(program2[0], searchItem):
+                '''Program Version 1 Match'''
+                genericPath = searchItem
+                matchFound = True
+            if matchFound == False:
+                if re.search(program3[0], searchItem):
+                    '''Program Version 2 Match'''
+                    genericPath = searchItem
+                    matchFound = True
+            if matchFound == False:
+                if re.search(program4[0], searchItem):
+                    '''Program Version 3 Match'''
+                    genericPath = searchItem
+                    matchFound = True
+            if matchFound == False:
+                '''Program Any Version Match'''
+                genericPath = searchItem
+            path = unicodedata.normalize('NFKD', genericPath).encode('ascii','ignore')
+            if path not in programPaths:
+                programPaths.append(path)
+    return programPaths

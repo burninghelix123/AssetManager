@@ -53,6 +53,21 @@ For any additional information, problems, or advice feel free to contact
 me using the information that was above.
 
 Changes:
+v1.5 - OSX Support - Code Cleanup - UI Update 9/17/13
+
+-AssetManager now runs on OSX -not yet fully tested -expect problems with open-with
+-Fonts and font sizes changed to be cross-platform compatible
+-Reworked registry lookup largely removing redundant code
+-Find Selected Item is now separated and resused
+-All delete menu's now reuse the same delete function
+-Reworked OpenAsset code/Removed redundant code
+-Removed redundant code in MainWindow
+-Removed redundant code in AddItem module
+-Consolidated except statements in DatabaseConnect Module
+-Ui Color Changes and bug fixes on custom colors, more variation
+
+
+Previous Fixes:
 
 v1.4 - Large Update and Bug Fixes 8/21/13
 
@@ -69,7 +84,7 @@ v1.4 - Large Update and Bug Fixes 8/21/13
 - More cross platform path changes
 - More redundant code removed
 
-Previous Fixes:
+
  v1.3 - Created one template to be used for several dialogs 7/8/13
 
 - Repurposed RegistryLookup to be able to lookup custom programs along with a more accurate result

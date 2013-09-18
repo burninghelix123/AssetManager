@@ -3,10 +3,11 @@ from PyQt4 import QtCore, QtGui
 import os
 import ConfigParser
 import string
+import tempfile
 import MySQLdb as mysql
 from ..functions import ItemDisplay
 from ..functions import FileIO
-import tempfile
+from ..functions import FindSelection
 from ..ui import CustomUi
 
 try:
@@ -32,38 +33,12 @@ class PropertiesPopUp(QtGui.QDialog):
         self.setupUi(propertiesWindow, listVar, interfaceColor,
                      currentMode, database)
 
-    def findSelection(self, listVar):
-        '''Retrieve selected item'''
-        items = listVar.count()
-        fileToOpen = ''
-        selectedItems = []
-        rangedList = range(items)
-        for i in rangedList:
-            if listVar.isItemSelected(listVar.item(i)) == True:
-                fileToOpen = listVar.item(i).statusTip()
-        return(fileToOpen)
-        
-    def findSelection(self, listVar):
-        '''Find selected item/asset'''
-        items = listVar.count()
-        fileToOpen = ''
-        selectedItems=[]
-        rangedList =range(items)
-        for i in rangedList:
-            if listVar.isItemSelected(listVar.item(i))==True:
-                fileToOpen = listVar.item(i).statusTip()
-        return(fileToOpen)
-    
-    def AddIcon(self):
-                                                                
-        pass
-    
     def saveProperties(self, propertiesWindow, listVar, currentMode, database):
         '''Save properties information'''
         tempDir = tempfile.gettempdir()
         tempLocation = os.path.join(tempDir,'AssetManagerTemp')
 
-        url = self.findSelection(listVar)
+        url = FindSelection.findSelection(listVar)
         valid_chars = "-_. %s%s" % (string.ascii_letters, string.digits)
         fileName = ''.join(c for c in str(url) if c in valid_chars)
         items = listVar.count()
@@ -201,7 +176,7 @@ class PropertiesPopUp(QtGui.QDialog):
         if currentMode == 0: #If ran locally
             url = QtGui.QFileDialog.getOpenFileName(self,
                                                     'Open file','', ("Select Image: (*.*)"))
-            url = os.path.abspath(url)
+            url = os.path.abspath(str(url))
             itemtext= str(item.statusTip())
             valid_chars = "-_. %s%s" % (string.ascii_letters, string.digits)
             fileName = ''.join(c for c in str(itemtext) if c in valid_chars)
@@ -224,7 +199,7 @@ class PropertiesPopUp(QtGui.QDialog):
         if currentMode == 1: #If ran dynamically
             url = QtGui.QFileDialog.getOpenFileName(self, 'Open file','',
                                                     ("Select Image: (*.*)"))
-            url = os.path.abspath(url)
+            url = os.path.abspath(str(url))
             itemtext = str(item.statusTip())
             valid_chars = "-_. %s%s" % (string.ascii_letters, string.digits)
             fileName = ''.join(c for c in str(itemtext) if c in valid_chars)
@@ -324,30 +299,30 @@ class PropertiesPopUp(QtGui.QDialog):
         '''Color interface based on main application window'''
         if interfaceColor == 1: #UI Dark Layout
             propertiesWindow.setStyleSheet('background-color:darkgrey;')
-            self.nameField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: rgb(200,200,200); color:black}')
-            self.categoryField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: rgb(200,200,200); color:black}')
-            self.tagsField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: rgb(200,200,200); color:black}')
-            self.statusField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: rgb(200,200,200); color:black}')
-            self.dateField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: rgb(200,200,200); color:black}')
-            self.authorField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: rgb(200,200,200); color:black}')
-            self.versionField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: rgb(200,200,200); color:black}')
-            self.commentsField.setStyleSheet('QTextEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: rgb(200,200,200); color:black}')
-            self.save.setStyleSheet('QPushButton {border: 1px solid gray; border-radius: 6px; padding: 6px; qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #E1E1E1, stop: 0.4 #DDDDDD, stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);}')
-            self.icon.setStyleSheet('QPushButton {border: 1px solid gray; border-radius: 6px; padding: 6px; qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #E1E1E1, stop: 0.4 #DDDDDD, stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);}')
-            self.closebtn.setStyleSheet('QPushButton {border: 1px solid gray; border-radius: 6px; padding: 6px; qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #E1E1E1, stop: 0.4 #DDDDDD, stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);}')
+            self.nameField.setStyleSheet('QLineEdit {selection-background-color: #E5E5E5; selection-color: dark-grey; border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: rgb(200,200,200); color:black}')
+            self.categoryField.setStyleSheet('QLineEdit {selection-background-color: #E5E5E5; selection-color: dark-grey; border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: rgb(200,200,200); color:black}')
+            self.tagsField.setStyleSheet('QLineEdit {selection-background-color: #E5E5E5; selection-color: dark-grey; border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: rgb(200,200,200); color:black}')
+            self.statusField.setStyleSheet('QLineEdit {selection-background-color: #E5E5E5; selection-color: dark-grey; border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: rgb(200,200,200); color:black}')
+            self.dateField.setStyleSheet('QLineEdit {selection-background-color: #E5E5E5; selection-color: dark-grey; border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: rgb(200,200,200); color:black}')
+            self.authorField.setStyleSheet('QLineEdit {selection-background-color: #E5E5E5; selection-color: dark-grey; border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: rgb(200,200,200); color:black}')
+            self.versionField.setStyleSheet('QLineEdit {selection-background-color: #E5E5E5; selection-color: dark-grey; border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: rgb(200,200,200); color:black}')
+            self.commentsField.setStyleSheet('QTextEdit {selection-background-color: #E5E5E5; selection-color: dark-grey; border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: rgb(200,200,200); color:black}')
+            self.save.setStyleSheet('QPushButton {border: 1px solid gray; border-radius: 20px; padding: 0 6px; background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #D8D8D8, stop: 0.4 #C5C5C5, stop: 0.5 #B6B6B6, stop: 1.0 #A2A2A2);} QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #FFFFFF, stop: 0.4 #F7F7F7, stop: 0.5 #F2F2F2, stop: 1.0 #EFEFEF);}')
+            self.icon.setStyleSheet('QPushButton {border: 1px solid gray; border-radius: 20px; padding: 0 6px; background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #D8D8D8, stop: 0.4 #C5C5C5, stop: 0.5 #B6B6B6, stop: 1.0 #A2A2A2);} QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #FFFFFF, stop: 0.4 #F7F7F7, stop: 0.5 #F2F2F2, stop: 1.0 #EFEFEF);}')
+            self.closebtn.setStyleSheet('QPushButton {border: 1px solid gray; border-radius: 20px; padding: 0 6px; background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #D8D8D8, stop: 0.4 #C5C5C5, stop: 0.5 #B6B6B6, stop: 1.0 #A2A2A2);} QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #FFFFFF, stop: 0.4 #F7F7F7, stop: 0.5 #F2F2F2, stop: 1.0 #EFEFEF);}')
         if interfaceColor == 2: #UI Light Layout
             propertiesWindow.setStyleSheet('')
-            self.nameField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; color:black}')
-            self.categoryField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; color:black}')
-            self.tagsField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; color:black}')
-            self.statusField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; color:black}')
-            self.dateField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; color:black}')
-            self.authorField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; color:black}')
-            self.versionField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; color:black}')
-            self.commentsField.setStyleSheet('QTextEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; color:black}')
-            self.save.setStyleSheet('QPushButton {border: 1px solid gray; border-radius: 6px; padding: 6px; qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #E1E1E1, stop: 0.4 #DDDDDD, stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);}')
-            self.icon.setStyleSheet('QPushButton {border: 1px solid gray; border-radius: 6px; padding: 6px; qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #E1E1E1, stop: 0.4 #DDDDDD, stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);}')
-            self.closebtn.setStyleSheet('QPushButton {border: 1px solid gray; border-radius: 6px; padding: 6px; qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #E1E1E1, stop: 0.4 #DDDDDD, stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);}')
+            self.nameField.setStyleSheet('QLineEdit {selection-background-color: #E5E5E5; selection-color: dark-grey; border: 1px solid gray; border-radius: 5px; padding: 0 3px; color:black}')
+            self.categoryField.setStyleSheet('QLineEdit {selection-background-color: #E5E5E5; selection-color: dark-grey; border: 1px solid gray; border-radius: 5px; padding: 0 3px; color:black}')
+            self.tagsField.setStyleSheet('QLineEdit {selection-background-color: #E5E5E5; selection-color: dark-grey; border: 1px solid gray; border-radius: 5px; padding: 0 3px; color:black}')
+            self.statusField.setStyleSheet('QLineEdit {selection-background-color: #E5E5E5; selection-color: dark-grey; border: 1px solid gray; border-radius: 5px; padding: 0 3px; color:black}')
+            self.dateField.setStyleSheet('QLineEdit {selection-background-color: #E5E5E5; selection-color: dark-grey; border: 1px solid gray; border-radius: 5px; padding: 0 3px; color:black}')
+            self.authorField.setStyleSheet('QLineEdit {selection-background-color: #E5E5E5; selection-color: dark-grey; border: 1px solid gray; border-radius: 5px; padding: 0 3px; color:black}')
+            self.versionField.setStyleSheet('QLineEdit {selection-background-color: #E5E5E5; selection-color: dark-grey; border: 1px solid gray; border-radius: 5px; padding: 0 3px; color:black}')
+            self.commentsField.setStyleSheet('QTextEdit {selection-background-color: #E5E5E5; selection-color: dark-grey; border: 1px solid gray; border-radius: 5px; padding: 0 3px; color:black}')
+            self.save.setStyleSheet('QPushButton {border: 1px solid gray; border-radius: 20px; padding: 0 6px; background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #EFEFEF, stop: 0.4 #E8E8E8, stop: 0.5 #E4E4E4, stop: 1.0 #E1E1E1);} QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #FFFFFF, stop: 0.4 #F7F7F7, stop: 0.5 #F2F2F2, stop: 1.0 #EFEFEF);}')
+            self.icon.setStyleSheet('QPushButton {border: 1px solid gray; border-radius: 20px; padding: 0 6px; background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #EFEFEF, stop: 0.4 #E8E8E8, stop: 0.5 #E4E4E4, stop: 1.0 #E1E1E1);} QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #FFFFFF, stop: 0.4 #F7F7F7, stop: 0.5 #F2F2F2, stop: 1.0 #EFEFEF);}')
+            self.closebtn.setStyleSheet('QPushButton {border: 1px solid gray; border-radius: 20px; padding: 0 6px; background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #EFEFEF, stop: 0.4 #E8E8E8, stop: 0.5 #E4E4E4, stop: 1.0 #E1E1E1);} QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #FFFFFF, stop: 0.4 #F7F7F7, stop: 0.5 #F2F2F2, stop: 1.0 #EFEFEF);}')
         if interfaceColor == 3: #UI Custom Layout
             propertiesWindow.setStyleSheet('background-color: %(color)s;' % {'color':PropertiesPopUp.col.name()})
             self.name.setStyleSheet('QLabel {color: %(color4)s}' % {'color4':PropertiesPopUp.col4.name()})
@@ -358,17 +333,17 @@ class PropertiesPopUp(QtGui.QDialog):
             self.author.setStyleSheet('QLabel {color: %(color4)s}' % {'color4':PropertiesPopUp.col4.name()})
             self.version.setStyleSheet('QLabel {color: %(color4)s}' % {'color4':PropertiesPopUp.col4.name()})
             self.comments.setStyleSheet('QLabel {color: %(color4)s}' % {'color4':PropertiesPopUp.col4.name()})           
-            self.nameField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: %(color1)s; color:%(color4)s}' % {'color1':PropertiesPopUp.col1.name(),'color4':PropertiesPopUp.col4.name()})
-            self.categoryField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: %(color1)s; color:%(color4)s}' % {'color1':PropertiesPopUp.col1.name(),'color4':PropertiesPopUp.col4.name()})
-            self.tagsField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: %(color1)s; color:%(color4)s}' % {'color1':PropertiesPopUp.col1.name(),'color4':PropertiesPopUp.col4.name()})
-            self.statusField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: %(color1)s; color:%(color4)s}' % {'color1':PropertiesPopUp.col1.name(),'color4':PropertiesPopUp.col4.name()})
-            self.dateField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: %(color1)s; color:%(color4)s}' % {'color1':PropertiesPopUp.col1.name(),'color4':PropertiesPopUp.col4.name()})
-            self.authorField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: %(color1)s; color:%(color4)s}' % {'color1':PropertiesPopUp.col1.name(),'color4':PropertiesPopUp.col4.name()})
-            self.versionField.setStyleSheet('QLineEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: %(color1)s; color: %(color4)s}' % {'color1':PropertiesPopUp.col1.name(),'color4':PropertiesPopUp.col4.name()})
-            self.commentsField.setStyleSheet('QTextEdit {border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: %(color1)s; color: %(color4)s}' % {'color1':PropertiesPopUp.col1.name(),'color4':PropertiesPopUp.col4.name()})
-            self.save.setStyleSheet(' color: %(color4)s; QPushButton {border: 1px solid gray; border-radius: 6px; padding: 6px; qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #E1E1E1, stop: 0.4 #DDDDDD, stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3); color: %(color4)s;}' % {'color4':PropertiesPopUp.col4.name()})
-            self.icon.setStyleSheet(' color: %(color4)s; QPushButton {border: 1px solid gray; border-radius: 6px; padding: 6px; qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #E1E1E1, stop: 0.4 #DDDDDD, stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3); color: %(color4)s;}' % {'color4':PropertiesPopUp.col4.name()})
-            self.closebtn.setStyleSheet(' color: %(color4)s; QPushButton {border: 1px solid gray; border-radius: 6px; padding: 6px; qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #E1E1E1, stop: 0.4 #DDDDDD, stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3); color: %(color4)s;}' % {'color4':PropertiesPopUp.col4.name()})
+            self.nameField.setStyleSheet('QLineEdit {selection-background-color: %(color2)s; border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: %(color1)s; color:%(color4)s}' % {'color1':PropertiesPopUp.col1.name(),'color2':PropertiesPopUp.col2.name(),'color4':PropertiesPopUp.col4.name()})
+            self.categoryField.setStyleSheet('QLineEdit {selection-background-color: %(color2)s; border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: %(color1)s; color:%(color4)s}' % {'color1':PropertiesPopUp.col1.name(),'color2':PropertiesPopUp.col2.name(),'color4':PropertiesPopUp.col4.name()})
+            self.tagsField.setStyleSheet('QLineEdit {selection-background-color: %(color2)s; border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: %(color1)s; color:%(color4)s}' % {'color1':PropertiesPopUp.col1.name(),'color2':PropertiesPopUp.col2.name(),'color4':PropertiesPopUp.col4.name()})
+            self.statusField.setStyleSheet('QLineEdit {selection-background-color: %(color2)s; border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: %(color1)s; color:%(color4)s}' % {'color1':PropertiesPopUp.col1.name(),'color2':PropertiesPopUp.col2.name(),'color4':PropertiesPopUp.col4.name()})
+            self.dateField.setStyleSheet('QLineEdit {selection-background-color: %(color2)s; border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: %(color1)s; color:%(color4)s}' % {'color1':PropertiesPopUp.col1.name(),'color2':PropertiesPopUp.col2.name(),'color4':PropertiesPopUp.col4.name()})
+            self.authorField.setStyleSheet('QLineEdit {selection-background-color: %(color2)s; border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: %(color1)s; color:%(color4)s}' % {'color1':PropertiesPopUp.col1.name(),'color2':PropertiesPopUp.col2.name(),'color4':PropertiesPopUp.col4.name()})
+            self.versionField.setStyleSheet('QLineEdit {selection-background-color: %(color2)s; border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: %(color1)s; color: %(color4)s}' % {'color1':PropertiesPopUp.col1.name(),'color2':PropertiesPopUp.col2.name(),'color4':PropertiesPopUp.col4.name()})
+            self.commentsField.setStyleSheet('QTextEdit {selection-background-color: %(color2)s; border: 1px solid gray; border-radius: 5px; padding: 0 3px; background-color: %(color1)s; color: %(color4)s}' % {'color1':PropertiesPopUp.col1.name(),'color2':PropertiesPopUp.col2.name(),'color1':PropertiesPopUp.col1.name(),'color4':PropertiesPopUp.col4.name()})
+            self.save.setStyleSheet('QPushButton {border: 1px solid gray; border-radius: 20px; padding: 0 6px; background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 %(color1)s, stop: 0.4 #C5C5C5, stop: 0.5 #B6B6B6, stop: 1.0 %(color)s); color: %(color4)s;} QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #fafafa, stop: 0.4 #f4f4f4, stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);}' % {'color': PropertiesPopUp.col.name(),'color1': PropertiesPopUp.col1.name(), 'color2': PropertiesPopUp.col2.name(), 'color3': PropertiesPopUp.col3.name(),'color4': PropertiesPopUp.col4.name()})
+            self.icon.setStyleSheet('QPushButton {border: 1px solid gray; border-radius: 20px; padding: 0 6px; background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 %(color1)s, stop: 0.4 #C5C5C5, stop: 0.5 #B6B6B6, stop: 1.0 %(color)s); color: %(color4)s;} QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #fafafa, stop: 0.4 #f4f4f4, stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);}' % {'color': PropertiesPopUp.col.name(),'color1': PropertiesPopUp.col1.name(), 'color2': PropertiesPopUp.col2.name(), 'color3': PropertiesPopUp.col3.name(),'color4': PropertiesPopUp.col4.name()})
+            self.closebtn.setStyleSheet('QPushButton {border: 1px solid gray; border-radius: 20px; padding: 0 6px; background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 %(color1)s, stop: 0.4 #C5C5C5, stop: 0.5 #B6B6B6, stop: 1.0 %(color)s); color: %(color4)s;} QPushButton:pressed {background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #fafafa, stop: 0.4 #f4f4f4, stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);}' % {'color': PropertiesPopUp.col.name(),'color1': PropertiesPopUp.col1.name(), 'color2': PropertiesPopUp.col2.name(), 'color3': PropertiesPopUp.col3.name(),'color4': PropertiesPopUp.col4.name()})
 
     def retranslateUi(self, propertiesWindow, listVar, currentMode, database):
         '''UI Renaming'''
@@ -391,7 +366,7 @@ class PropertiesPopUp(QtGui.QDialog):
         '''Populates stored information into fields'''
         tempDir = tempfile.gettempdir()
         tempLocation = os.path.join(tempDir,'AssetManagerTemp')
-        item = self.findSelection(listVar)
+        item = FindSelection.findSelection(listVar)
         valid_chars = "-_. %s%s" % (string.ascii_letters, string.digits)
         fileName = ''.join(c for c in str(item) if c in valid_chars)
         itemNameExt = os.path.split(str(item))

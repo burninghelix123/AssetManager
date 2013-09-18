@@ -1,4 +1,4 @@
-'''Module that adds logging to AssetManager'''
+'''Adds Logging'''
 
 import sys
 import os
